@@ -21,14 +21,17 @@ public:
 
 	void setBoneColorTf(vtkColorTransferFunction *);
 	void setBone2ColorTf(vtkColorTransferFunction *);
+	void updateVolumeColor(vtkColorTransferFunction *);
 
 	void setMinGrayValue(double min_gv);
 	void setMaxGrayValue(double max_gv);
 
-	void drawColorBpsBar();
+	QColor getCurColorBpColor();
+	void setCurColorBpColor(QColor);
 
-	void showColorTfBpInfoAt(int bar_idx);
+	void drawColorBpsBar();
 	void drawCurColorBpColor();
+	void showColorTfBpInfoAt(int bar_idx);
 
 	void receiveClickedPosAt(int px);
 

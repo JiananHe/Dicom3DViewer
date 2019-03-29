@@ -110,7 +110,7 @@
     <widget class="QLabel" name="colortf_color_label">
      <property name="geometry">
       <rect>
-       <x>360</x>
+       <x>355</x>
        <y>30</y>
        <width>51</width>
        <height>16</height>
@@ -177,7 +177,7 @@
     <widget class="QLabel" name="colortf_curbp_idx_label">
      <property name="geometry">
       <rect>
-       <x>315</x>
+       <x>318</x>
        <y>29</y>
        <width>31</width>
        <height>21</height>

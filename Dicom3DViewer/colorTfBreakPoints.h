@@ -19,6 +19,8 @@ public:
 	QColor getColorBpColorAt(int);
 	double getColorBpGvAt(int);
 
+	void setColorBpColorAt(int, QColor);
+
 private:
 	map<double, QColor> colorBpsMap;
 };
@@ -85,4 +87,11 @@ inline double ColorTfBreakPoints::getColorBpGvAt(int idx)
 		abort();
 
 	return iter->first;
+}
+
+inline void ColorTfBreakPoints::setColorBpColorAt(int idx, QColor new_color)
+{
+	double gv = getColorBpGvAt(idx);
+	colorBpsMap.erase(gv);
+	colorBpsMap.insert(pair<double, QColor>(gv, new_color));
 }

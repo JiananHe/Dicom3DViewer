@@ -26,20 +26,17 @@ ColorTransferFunction::~ColorTransferFunction()
 
 void ColorTransferFunction::setBoneColorTf(vtkColorTransferFunction * volumeColor)
 {
-	volumeColor->RemoveAllPoints();
 	//bone
 	int max_point = 3071 > max_gray_value ? max_gray_value : 3071;
 	int min_point = -3024 < min_gray_value ? min_gray_value : -3024;
-	volumeColor->AddRGBPoint(min_point, 0, 0, 0, 0.5, 0.0);
-	volumeColor->AddRGBPoint(-16, 0.73, 0.25, 0.30, 0.49, .61);
-	volumeColor->AddRGBPoint(641, .90, .82, .56, .5, 0.0);
-	volumeColor->AddRGBPoint(max_point, 1, 1, 1, .5, 0.0);
 
 	my_colortf_bps->removeAllPoints();
 	my_colortf_bps->insertColorTfBp(min_point, 0, 0, 0);
 	my_colortf_bps->insertColorTfBp(-16, 0.73, 0.25, 0.30);
 	my_colortf_bps->insertColorTfBp(641, .90, .82, .56);
 	my_colortf_bps->insertColorTfBp(max_point, 1, 1, 1);
+
+	updateVolumeColor(volumeColor);
 
 	//show info of the first color bp 
 	my_colortf_scrollBar->setValue(0);
@@ -49,16 +46,9 @@ void ColorTransferFunction::setBoneColorTf(vtkColorTransferFunction * volumeColo
 
 void ColorTransferFunction::setBone2ColorTf(vtkColorTransferFunction* volumeColor)
 {
-	volumeColor->RemoveAllPoints();	
 	//bone2
 	int max_point = 3071 > max_gray_value ? max_gray_value : 3071;
 	int min_point = -3024 < min_gray_value ? min_gray_value : -3024;
-	volumeColor->AddRGBPoint(min_point, 0.0, 0.0, 0.0);
-	volumeColor->AddRGBPoint(143.56, 157 / 255.0, 91 / 255.0, 47 / 255.0);
-	volumeColor->AddRGBPoint(166.22, 1.0, 154 / 255.0, 74 / 255.0);
-	volumeColor->AddRGBPoint(214.39, 1.0, 1.0, 1.0);
-	volumeColor->AddRGBPoint(419.74, 1.0, 239 / 255.0, 244 / 255.0);
-	volumeColor->AddRGBPoint(max_point, 211 / 255.0, 168 / 255.0, 255 / 255.0);
 
 	my_colortf_bps->removeAllPoints();
 	my_colortf_bps->insertColorTfBp(min_point, 0.0, 0.0, 0.0);
@@ -68,10 +58,24 @@ void ColorTransferFunction::setBone2ColorTf(vtkColorTransferFunction* volumeColo
 	my_colortf_bps->insertColorTfBp(419.74, 1.0, 239 / 255.0, 244 / 255.0);
 	my_colortf_bps->insertColorTfBp(max_point, 211 / 255.0, 168 / 255.0, 1);
 
+	updateVolumeColor(volumeColor);
+
 	//show info of the first color bp 
 	my_colortf_scrollBar->setValue(0);
 	cur_color_bp_idx = 0;
 	showColorTfBpInfoAt(0);
+}
+
+void ColorTransferFunction::updateVolumeColor(vtkColorTransferFunction * volumeColor)
+{
+	volumeColor->RemoveAllPoints();
+	map<double, QColor> cur_colortf_bps = my_colortf_bps->getColorBpsMap();
+	map<double, QColor>::iterator iter;
+
+	for (iter = cur_colortf_bps.begin(); iter != cur_colortf_bps.end(); ++iter)
+	{
+		volumeColor->AddRGBPoint(iter->first, (iter->second).red() / 255.0, (iter->second).green() / 255.0, (iter->second).blue() / 255.0);
+	}
 }
 
 void ColorTransferFunction::setMinGrayValue(double min_gv)
@@ -84,6 +88,17 @@ void ColorTransferFunction::setMaxGrayValue(double max_gv)
 {
 	max_gray_value = max_gv;
 	my_maxGV_label->setText(QString::number(max_gv, 10, 2));
+}
+
+QColor ColorTransferFunction::getCurColorBpColor()
+{
+	return my_colortf_bps->getColorBpColorAt(cur_color_bp_idx);
+}
+
+void ColorTransferFunction::setCurColorBpColor(QColor new_color)
+{
+	my_colortf_bps->setColorBpColorAt(cur_color_bp_idx, new_color);
+	showColorTfBpInfoAt(cur_color_bp_idx);
 }
 
 void ColorTransferFunction::drawColorBpsBar()
@@ -149,7 +164,7 @@ void ColorTransferFunction::drawCurColorBpColor()
 	int lh = my_curBpColor_label->geometry().height();
 	int l = 20; 
 
-	QColor idx_color = my_colortf_bps->getColorBpColorAt(cur_color_bp_idx);
+	QColor idx_color = getCurColorBpColor();
 	painter.setBrush(QBrush(QColor(idx_color)));
 	painter.drawRect((lw - l) / 2, (lh - l) / 2, l, l);
 }
@@ -165,14 +180,13 @@ void ColorTransferFunction::showColorTfBpInfoAt(int bar_idx)
 	else
 	{
 		cur_color_bp_idx = bar_idx % bp_len;
-
+		my_colortf_scrollBar->setValue(cur_color_bp_idx);
 		my_curBpIdx_label->setText(QString::number(cur_color_bp_idx));
 		my_curBpColor_label->repaint();
 		my_curBpX_text->setText(QString::number(my_colortf_bps->getColorBpGvAt(cur_color_bp_idx), 10, 2));
 		my_colortf_bar->repaint();
 	}
 }
-
 
 void ColorTransferFunction::receiveClickedPosAt(int px)
 {

@@ -54,14 +54,14 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 		}
 		else if (event->type() == QEvent::MouseButtonRelease)
 		{
-			QColor init_color = QColor(Qt::blue);
-			QColor color = QColorDialog::getColor(init_color, this, "select color");
-			if (color.isValid())
+			QColor cur_color = colorTf->getCurColorBpColor();
+			QColor new_color = QColorDialog::getColor(cur_color, this, "select color");
+			if (new_color.isValid() && new_color != cur_color)
 			{
-
+				colorTf->setCurColorBpColor(new_color);
+				colorTf->updateVolumeColor(vrProcess->getVolumeColorTf());
+				vrProcess->update();
 			}
-
-
 		}
 		return true;
 	}
