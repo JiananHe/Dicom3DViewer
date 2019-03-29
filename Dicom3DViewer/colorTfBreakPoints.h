@@ -11,6 +11,7 @@ class ColorTfBreakPoints
 public:
 	ColorTfBreakPoints() {};
 	void insertColorTfBp(double, double, double, double);
+	void insertColorTfBp(double);
 	void removeAllPoints();
 	map<double, QColor> getColorBpsMap();
 	int getColorBpsMapLen();
@@ -27,10 +28,33 @@ private:
 
 inline void ColorTfBreakPoints::insertColorTfBp(double gv, double r, double g, double b)
 {
+	//insert a new color bp with specific color
 	int rt = r * 255 + 0.5;
 	int gt = g * 255 + 0.5;
 	int bt = b * 255 + 0.5;
 	colorBpsMap.insert(pair<double, QColor>(gv, QColor(rt, gt, bt)));
+}
+
+inline void ColorTfBreakPoints::insertColorTfBp(double gv_new)
+{
+	//insert a new color bp with interpolation color
+	map<double, QColor>::iterator iter = colorBpsMap.begin();
+	double gv_small = iter->first;
+	for (; iter != colorBpsMap.end(); ++iter)
+	{
+		if (gv_new >= iter->first)
+			gv_small = iter->first;
+		else
+			break;
+	}
+	double gv_big = iter->first;
+
+	//interpolate color
+	QColor color_small = colorBpsMap.at(gv_small);
+	QColor color_big = colorBpsMap.at(gv_big);
+	QColor color_new = QColor((color_small.red() + color_big.red()) / 2, (color_small.green() + color_big.green()) / 2, (color_small.blue() + color_big.blue()) / 2);
+
+	colorBpsMap.insert(pair<double, QColor>(gv_new, color_new));
 }
 
 inline void ColorTfBreakPoints::removeAllPoints()

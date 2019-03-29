@@ -35,25 +35,41 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 	if (watched == ui->colortf_bar)
 	{
 		if (event->type() == QEvent::Paint)
-		{
+		{//draw color tf bar
 			colorTf->drawColorBpsBar();
 		}
-		else if (event->type() == QEvent::MouseButtonRelease)
-		{
+		if (event->type() == QEvent::MouseButtonPress)
+		{//choose or create a color tf bp
 			QPoint mp = ui->colortf_bar->mapFromGlobal( QCursor::pos());
-			cout << "mx: " << mp.x() << ", my: " << mp.y() << endl;
 			colorTf->receiveClickedPosAt(mp.x());
+
+			setMouseTracking(true);
+		}
+		if (event->type() == QEvent::MouseMove)
+		{//change the position of the checked color tf bp
+			QPoint mp = ui->colortf_bar->mapFromGlobal(QCursor::pos());
+
+			//cout << "mx: "<<mp.x() <<", my: "<< mp.y() << endl;
+		}
+		if (event->type() == QEvent::KeyPress)
+		{//delete the checked color tf bp
+			cout << "key press action" << endl;
+			QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+			if (keyEvent->key() == Qt::Key_Delete)
+			{
+				cout << "delete action" << endl;
+			}
 		}
 		return true;
 	}
 	if (watched == ui->colortf_curbp_color_label)
 	{
 		if (event->type() == QEvent::Paint)
-		{
+		{//draw the color of checked color tf bp
 			colorTf->drawCurColorBpColor();
 		}
 		else if (event->type() == QEvent::MouseButtonRelease)
-		{
+		{////change the color of the checked color tf bp
 			QColor cur_color = colorTf->getCurColorBpColor();
 			QColor new_color = QColorDialog::getColor(cur_color, this, "select color");
 			if (new_color.isValid() && new_color != cur_color)

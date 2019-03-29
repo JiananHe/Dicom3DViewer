@@ -199,6 +199,9 @@ void ColorTransferFunction::receiveClickedPosAt(int px)
 	if (flag == -1)
 	{
 		//add a new color tf bp
+		my_colortf_bps->insertColorTfBp(gv_click);
+		cur_color_bp_idx = my_colortf_bps->findElementInApprox(gv_click, 0.0);
+		showColorTfBpInfoAt(cur_color_bp_idx);
 	}
 	else
 	{

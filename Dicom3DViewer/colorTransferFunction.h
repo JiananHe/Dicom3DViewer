@@ -45,7 +45,6 @@ private:
 	int w;
 	int h;
 
-
 	QWidget* my_colortf_widget;
 	QFrame* my_colortf_bar;
 	QLabel* my_minGV_label;
