@@ -36,6 +36,9 @@ private slots:
 	void onSetBoneStyle();
 	void onSetBone2Style();
 
+	void onSetSmartMapper();
+	void onSetRayCastMapper();
+
 	bool eventFilter(QObject *, QEvent *);
 	void onShowColorBpInfoAt(int);
 };

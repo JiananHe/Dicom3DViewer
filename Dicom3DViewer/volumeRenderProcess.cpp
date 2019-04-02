@@ -33,8 +33,8 @@ void VolumeRenderProcess::volumeRenderFlow(QString folder_path)
 	cout << "dimension[] :" << imageDims[0] << " " << imageDims[1] << " " << imageDims[2] << endl;
 
 	//Mapper
-	vtkSmartPointer<vtkGPUVolumeRayCastMapper> volumeMapperGpu = vtkSmartPointer<vtkGPUVolumeRayCastMapper>::New();
-	volumeMapperGpu->SetInputConnection(dicoms_reader->GetOutputPort());
+	vtkSmartPointer<vtkGPUVolumeRayCastMapper> RcGpuMapper = vtkSmartPointer<vtkGPUVolumeRayCastMapper>::New();
+	RcGpuMapper->SetInputConnection(dicoms_reader->GetOutputPort());
 
 	//set initial tf with bone style
 	volumeScalarOpacity->RemoveAllPoints();
@@ -56,7 +56,7 @@ void VolumeRenderProcess::volumeRenderFlow(QString folder_path)
 
 	//volume
 	volume->RemoveAllObservers();
-	volume->SetMapper(volumeMapperGpu);
+	volume->SetMapper(RcGpuMapper);
 	volume->SetProperty(volumeProperty);
 
 	//render
@@ -98,6 +98,26 @@ double VolumeRenderProcess::getMaxGrayValue()
 	histogram->SetInputData(dicoms_reader->GetOutput());
 	histogram->Update();
 	return *(histogram->GetMax());
+}
+
+void VolumeRenderProcess::setVRMapper(const char * str_mapper)
+{
+	if (str_mapper == "ray_cast")
+	{
+		vtkSmartPointer<vtkGPUVolumeRayCastMapper> RcGpuMapper = vtkSmartPointer<vtkGPUVolumeRayCastMapper>::New();
+		RcGpuMapper->SetInputConnection(dicoms_reader->GetOutputPort());
+
+		volume->SetMapper(RcGpuMapper);
+		update();
+	}
+	else if (str_mapper == "smart")
+	{
+		vtkSmartPointer<vtkSmartVolumeMapper> volumeMapperSmart = vtkSmartPointer<vtkSmartVolumeMapper>::New();
+		volumeMapperSmart->SetInputData(dicoms_reader->GetOutput());
+
+		volume->SetMapper(volumeMapperSmart);
+		update();
+	}
 }
 
 void VolumeRenderProcess::update()

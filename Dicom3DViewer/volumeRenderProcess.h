@@ -13,6 +13,8 @@
 #include <vtkColorTransferFunction.h>
 #include <vtkNamedColors.h>
 #include <vtkImageAccumulate.h>
+#include <vtkVolumeMapper.h>
+#include <vtkSmartVolumeMapper.h>
 
 class VolumeRenderProcess : public QVTKWidget
 {
@@ -27,6 +29,8 @@ public:
 
 	double getMinGrayValue();
 	double getMaxGrayValue();
+
+	void setVRMapper(const char *);
 
 	void update();
 

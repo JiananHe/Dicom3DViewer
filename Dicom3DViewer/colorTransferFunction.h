@@ -1,4 +1,5 @@
 #pragma once
+#include<tuple>
 #include <qwidget.h>
 #include <qframe.h>
 #include <qlabel.h>
@@ -12,6 +13,8 @@
 
 #include "volumeRenderProcess.h"
 #include "colorTfBreakPoints.h"
+
+using namespace std;
 
 class ColorTransferFunction
 {
@@ -27,13 +30,16 @@ public:
 	void setMaxGrayValue(double max_gv);
 
 	QColor getCurColorBpColor();
+	tuple<int, int> getCurColorBpBorder();
 	void setCurColorBpColor(QColor);
+	void setCurColorBpGv(int);
 
 	void drawColorBpsBar();
 	void drawCurColorBpColor();
 	void showColorTfBpInfoAt(int bar_idx);
 
 	void receiveClickedPosAt(int px);
+	void deleteClickedColorBp();
 
 private:
 	ColorTfBreakPoints* my_colortf_bps;
@@ -41,16 +47,19 @@ private:
 	double max_gray_value;
 	int cur_color_bp_idx;
 
-	int d; //the diameter of cirlces in breakpoints
-	int w;
-	int h;
-
 	QWidget* my_colortf_widget;
 	QFrame* my_colortf_bar;
 	QLabel* my_minGV_label;
 	QLabel* my_maxGV_label;
 	QLabel* my_curBpIdx_label;
 	QLabel* my_curBpColor_label;
-	QTextEdit* my_curBpX_text;
+	QLabel* my_curBpX_label;
 	QScrollBar* my_colortf_scrollBar;
+
+private:
+	int d; //the diameter of cirlces in breakpoints
+	int w;
+	int h;
+public:
+	int getD();
 };

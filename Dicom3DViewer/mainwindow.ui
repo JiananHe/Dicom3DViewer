@@ -54,7 +54,7 @@
       <rect>
        <x>510</x>
        <y>110</y>
-       <width>41</width>
+       <width>54</width>
        <height>16</height>
       </rect>
      </property>
@@ -73,6 +73,9 @@
        <width>551</width>
        <height>51</height>
       </rect>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::ClickFocus</enum>
      </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -103,6 +106,9 @@
        <height>31</height>
       </rect>
      </property>
+     <property name="focusPolicy">
+      <enum>Qt::ClickFocus</enum>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -131,28 +137,6 @@
      </property>
      <property name="text">
       <string>Point:</string>
-     </property>
-    </widget>
-    <widget class="QTextEdit" name="colortf_curbp_x_textEdit">
-     <property name="geometry">
-      <rect>
-       <x>460</x>
-       <y>26</y>
-       <width>71</width>
-       <height>24</height>
-      </rect>
-     </property>
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="inputMethodHints">
-      <set>Qt::ImhDigitsOnly</set>
-     </property>
-     <property name="readOnly">
-      <bool>false</bool>
      </property>
     </widget>
     <widget class="QScrollBar" name="colortf_verticalScrollBar">
@@ -193,6 +177,19 @@
       <string/>
      </property>
     </widget>
+    <widget class="QLabel" name="colortf_curbp_x_label">
+     <property name="geometry">
+      <rect>
+       <x>460</x>
+       <y>30</y>
+       <width>72</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -223,8 +220,16 @@
      <addaction name="actionSkinStyle"/>
      <addaction name="actionMuscleStyle"/>
     </widget>
+    <widget class="QMenu" name="menuMapper">
+     <property name="title">
+      <string>Mapper</string>
+     </property>
+     <addaction name="actionRayCastMapper"/>
+     <addaction name="actionSmartMapper"/>
+    </widget>
     <addaction name="menuRenderStyles"/>
     <addaction name="actionBgColor"/>
+    <addaction name="menuMapper"/>
    </widget>
    <addaction name="menuFiles"/>
    <addaction name="menuSetting"/>
@@ -266,6 +271,16 @@
   <action name="actionMuscleStyle">
    <property name="text">
     <string>Muscle</string>
+   </property>
+  </action>
+  <action name="actionRayCastMapper">
+   <property name="text">
+    <string>RayCastGPU</string>
+   </property>
+  </action>
+  <action name="actionSmartMapper">
+   <property name="text">
+    <string>SmartMethod</string>
    </property>
   </action>
  </widget>

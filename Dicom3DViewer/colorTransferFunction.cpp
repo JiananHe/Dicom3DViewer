@@ -8,7 +8,7 @@ ColorTransferFunction::ColorTransferFunction(QWidget * color_tf_widget)
 	my_maxGV_label = my_colortf_widget->findChild<QLabel*>("colortf_max_label");
 	my_curBpIdx_label = my_colortf_widget->findChild<QLabel*>("colortf_curbp_idx_label");
 	my_curBpColor_label = my_colortf_widget->findChild<QLabel*>("colortf_curbp_color_label");
-	my_curBpX_text = my_colortf_widget->findChild<QTextEdit*>("colortf_curbp_x_textEdit");
+	my_curBpX_label = my_colortf_widget->findChild<QLabel*>("colortf_curbp_x_label");
 	my_colortf_scrollBar = my_colortf_widget->findChild< QScrollBar*>("colortf_verticalScrollBar");
 	
 	d = 15;
@@ -16,8 +16,6 @@ ColorTransferFunction::ColorTransferFunction(QWidget * color_tf_widget)
 	h = my_colortf_bar->geometry().height();
 
 	my_colortf_bps = new ColorTfBreakPoints();
-
-	
 }
 
 ColorTransferFunction::~ColorTransferFunction()
@@ -56,7 +54,7 @@ void ColorTransferFunction::setBone2ColorTf(vtkColorTransferFunction* volumeColo
 	my_colortf_bps->insertColorTfBp(166.22, 1.0, 154 / 255.0, 74 / 255.0);
 	my_colortf_bps->insertColorTfBp(214.39, 1.0, 1.0, 1.0);
 	my_colortf_bps->insertColorTfBp(419.74, 1.0, 239 / 255.0, 244 / 255.0);
-	my_colortf_bps->insertColorTfBp(max_point, 211 / 255.0, 168 / 255.0, 1);
+	my_colortf_bps->insertColorTfBp(max_point, 211 / 255.0, 168 / 255.0, 1.0);
 
 	updateVolumeColor(volumeColor);
 
@@ -95,10 +93,37 @@ QColor ColorTransferFunction::getCurColorBpColor()
 	return my_colortf_bps->getColorBpColorAt(cur_color_bp_idx);
 }
 
+tuple<int, int> ColorTransferFunction::getCurColorBpBorder()
+{
+	double left_gv = my_colortf_bps->getColorBpGvAt(cur_color_bp_idx, -1);
+	double right_gv = my_colortf_bps->getColorBpGvAt(cur_color_bp_idx, 1);
+
+	int left_border = (left_gv - min_gray_value) / (max_gray_value - min_gray_value) * (w - 2 * d) + d + 0.5;
+	int right_border = (right_gv - min_gray_value) / (max_gray_value - min_gray_value) * (w - 2 * d) + d + 0.5;
+
+	return make_tuple(left_border, right_border);
+}
+
 void ColorTransferFunction::setCurColorBpColor(QColor new_color)
 {
 	my_colortf_bps->setColorBpColorAt(cur_color_bp_idx, new_color);
 	showColorTfBpInfoAt(cur_color_bp_idx);
+}
+
+void ColorTransferFunction::setCurColorBpGv(int px)
+{
+	int rx = px - d;
+	double gv_move = (rx / (double)(w - 2 * d)) * (max_gray_value - min_gray_value) + min_gray_value;
+
+	int flag = my_colortf_bps->findElementInApprox(gv_move, 0.01);
+	if (flag == -1) //would not over other color bp
+	{
+		QColor color = my_colortf_bps->getColorBpColorAt(cur_color_bp_idx);
+		my_colortf_bps->deleteColorBp(cur_color_bp_idx);
+		my_colortf_bps->insertColorTfBp(gv_move, color.red(), color.green(), color.blue());
+
+		showColorTfBpInfoAt(cur_color_bp_idx);
+	}
 }
 
 void ColorTransferFunction::drawColorBpsBar()
@@ -143,7 +168,7 @@ void ColorTransferFunction::drawColorBpsBar()
 	}
 
 	//draw a circle for current color tf bp
-	double cur_bp_gv = my_colortf_bps->getColorBpGvAt(cur_color_bp_idx);
+	double cur_bp_gv = my_colortf_bps->getColorBpGvAt(cur_color_bp_idx, 0);
 	double cur_point = (cur_bp_gv - min_gray_value) / (max_gray_value - min_gray_value);
 
 	int out_cr = 2;
@@ -183,7 +208,7 @@ void ColorTransferFunction::showColorTfBpInfoAt(int bar_idx)
 		my_colortf_scrollBar->setValue(cur_color_bp_idx);
 		my_curBpIdx_label->setText(QString::number(cur_color_bp_idx));
 		my_curBpColor_label->repaint();
-		my_curBpX_text->setText(QString::number(my_colortf_bps->getColorBpGvAt(cur_color_bp_idx), 10, 2));
+		my_curBpX_label->setText(QString::number(my_colortf_bps->getColorBpGvAt(cur_color_bp_idx, 0), 10, 2));
 		my_colortf_bar->repaint();
 	}
 }
@@ -209,4 +234,16 @@ void ColorTransferFunction::receiveClickedPosAt(int px)
 		cur_color_bp_idx = flag;
 		showColorTfBpInfoAt(cur_color_bp_idx);
 	}
+}
+
+void ColorTransferFunction::deleteClickedColorBp()
+{
+	my_colortf_bps->deleteColorBp(cur_color_bp_idx);
+	cur_color_bp_idx = 0;
+	showColorTfBpInfoAt(cur_color_bp_idx);
+}
+
+int ColorTransferFunction::getD()
+{
+	return d;
 }
