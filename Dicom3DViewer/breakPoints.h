@@ -17,7 +17,7 @@ public:
 	int getMapLength();
 	int findElementInApprox(double, double);
 
-	double getBpValueAt(int idx);
+	T getBpValueAt(int idx);
 	double getBpKeyAt(int idx, int flag);
 	void deleteBpAt(int idx);
 	void changeBpValueAt(int idx, T new_value);
@@ -59,15 +59,18 @@ inline void BreakPoints<T>::insertBreakPoint(double key)
 	double key_big = iter->first;
 
 	//interpolate color
-	T value_small = iter->second;
-	T value_big = iter->second;
-	colorBpsMap.insert(pair<double, T>(key, (value_small+ value_big) / 2));
+	T value_small = breakpoints_map.at(key_small);
+	T value_big = breakpoints_map.at(key_big);
+
+	double r = (key - key_small) / (key_big - key_small);
+
+	breakpoints_map.insert(pair<double, T>(key, value_small + (value_big - value_small) * r));
 }
 
 template<typename T>
 inline void BreakPoints<T>::removeAllPoints()
 {
-	breakpoints_map.clear()
+	breakpoints_map.clear();
 }
 
 template<typename T>
@@ -97,7 +100,7 @@ inline int BreakPoints<T>::findElementInApprox(double key_to_find, double approx
 }
 
 template<typename T>
-inline double BreakPoints<T>::getBpValueAt(int idx)
+inline T BreakPoints<T>::getBpValueAt(int idx)
 {
 	map<double, T>::iterator iter = breakpoints_map.begin();
 	while (idx)
@@ -105,7 +108,7 @@ inline double BreakPoints<T>::getBpValueAt(int idx)
 		iter++;
 		--idx;
 	}
-	if (iter == colorBpsMap.end())
+	if (iter == breakpoints_map.end())
 		abort();
 
 	return iter->second;
@@ -142,14 +145,14 @@ inline double BreakPoints<T>::getBpKeyAt(int idx, int flag)
 template<typename T>
 inline void BreakPoints<T>::deleteBpAt(int idx)
 {
-	double key = getBpKeyAt(idx);
+	double key = getBpKeyAt(idx, 0);
 	breakpoints_map.erase(key);
 }
 
 template<typename T>
 inline void BreakPoints<T>::changeBpValueAt(int idx, T new_value)
 {
-	double key = getBpKeyAt(idx);
+	double key = getBpKeyAt(idx, 0);
 	breakpoints_map.erase(key);
 	breakpoints_map.insert(pair<double, T>(key, new_value));
 }

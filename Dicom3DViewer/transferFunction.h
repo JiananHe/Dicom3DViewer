@@ -1,6 +1,13 @@
 #pragma once
 #include "breakPoints.h"
 #include <tuple>
+#include <qwidget.h>
+#include <qframe.h>
+#include <qlabel.h>
+#include <qscrollbar.h>
+#include <qtextedit.h>
+#include <QPainter>
+#include <QMouseEvent>
 
 template<typename T>
 class TransferFunction
@@ -20,7 +27,9 @@ public:
 	void chooseOrAddBpAt(int coord);
 	void deleteCurTfBp();
 
-	virtual showTfBpInfoAt(int idx) = 0;
+	void showTfBpInfoAt(int idx);
+	virtual void showTfDiagram() = 0;
+	virtual void showCurBpValue() = 0;
 
 protected:
 	BreakPoints<T>* tf_bps;
@@ -28,7 +37,17 @@ protected:
 	double max_key;
 	int cur_bp_idx;
 
-private:
+	QWidget* tf_widgets;
+	QFrame* tf_diagram;
+	QScrollBar* tf_scrollBar;
+	QLabel* min_key_label;
+	QLabel* max_key_label;
+	QLabel* cur_bpIdx_label;
+	QLabel* cur_bpKey_label;
+	QLabel* cur_bpValue_label;
+
+
+protected:
 	int d; //the diameter of cirlces in breakpoints
 	int w;
 	int h;
@@ -39,6 +58,7 @@ public:
 template<typename T>
 TransferFunction<T>::TransferFunction()
 {
+	tf_bps = new BreakPoints<T>();
 }
 
 template<typename T>
@@ -50,12 +70,14 @@ template<typename T>
 inline void TransferFunction<T>::setMinKey(double key)
 {
 	min_key = key;
+	min_key_label->setText(QString::number(min_key, 10, 2));
 }
 
 template<typename T>
 inline void TransferFunction<T>::setMaxKey(double key)
 {
 	max_key = key;
+	max_key_label->setText(QString::number(max_key, 10, 2));
 }
 
 template<typename T>
@@ -109,7 +131,7 @@ inline void TransferFunction<T>::chooseOrAddBpAt(int coord)
 	double key_click = (tf_coord / (double)(w - 2 * d)) * (max_key - min_key) + min_key;
 	double key_gap = (d / (2.0 * (w - 2 * d))) * (max_key - min_key);
 
-	int flag = my_colortf_bps->findElementInApprox(key_click, key_gap);
+	int flag = tf_bps->findElementInApprox(key_click, key_gap);
 	cout << "the flag is: " << flag << endl;
 	if (flag == -1)
 	{
@@ -122,7 +144,7 @@ inline void TransferFunction<T>::chooseOrAddBpAt(int coord)
 	{
 		//choose an existing color tf bp
 		cur_bp_idx = flag;
-		showTfBpInfoAt(cur_color_bp_idx);
+		showTfBpInfoAt(cur_bp_idx);
 	}
 }
 
@@ -132,6 +154,27 @@ inline void TransferFunction<T>::deleteCurTfBp()
 	tf_bps->deleteBpAt(cur_bp_idx);
 	cur_bp_idx = 0;
 	showTfBpInfoAt(cur_bp_idx);
+}
+
+template<typename T>
+inline void TransferFunction<T>::showTfBpInfoAt(int idx)
+{
+	int bp_len = tf_bps->getMapLength();
+	if (idx >= bp_len)
+	{
+		tf_scrollBar->setValue(bp_len - 1);
+		return;
+	}
+	else
+	{
+		cur_bp_idx = idx % bp_len;
+		tf_scrollBar->setValue(cur_bp_idx);
+		cur_bpIdx_label->setText(QString::number(cur_bp_idx));
+		cur_bpValue_label->repaint();
+		cur_bpKey_label->setText(QString::number(tf_bps->getBpKeyAt(cur_bp_idx, 0), 10, 2));
+		tf_diagram->repaint();
+	}
+
 }
 
 template<typename T>

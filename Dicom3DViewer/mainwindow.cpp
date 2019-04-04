@@ -45,7 +45,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 	{
 		if (event->type() == QEvent::Paint)
 		{//draw color tf bar
-			colorTf->drawColorBpsBar();
+			colorTf->showTfDiagram();
 		}
 
 		if (event->type() == QEvent::MouseButtonPress)
@@ -53,8 +53,8 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 			QPoint mp = ui->colortf_bar->mapFromGlobal( QCursor::pos());
 			if (mp.x() > colorTf->getD() && mp.x() < ui->colortf_bar->geometry().width() - colorTf->getD())
 			{
-				colorTf->receiveClickedPosAt(mp.x());
-				auto border = colorTf->getCurColorBpBorder();
+				colorTf->chooseOrAddBpAt(mp.x());
+				auto border = colorTf->getCurBpBorder();
 				left_border = get<0>(border);
 				right_border = get<1>(border);
 			}
@@ -64,7 +64,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 			QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
 			if (keyEvent->key() == Qt::Key_Delete)
 			{
-				colorTf->deleteClickedColorBp();
+				colorTf->deleteCurTfBp();
 				colorTf->updateVolumeColor(vrProcess->getVolumeColorTf());
 				vrProcess->update();
 			}
@@ -74,7 +74,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 			int pos_x = ui->colortf_bar->mapFromGlobal(QCursor::pos()).x();
 			if(pos_x > left_border && pos_x <right_border)
 			{
-				colorTf->setCurColorBpGv(pos_x);
+				colorTf->changeCurBpKey(pos_x);
 				colorTf->updateVolumeColor(vrProcess->getVolumeColorTf());
 				vrProcess->update();
 			}
@@ -86,15 +86,15 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 	{
 		if (event->type() == QEvent::Paint)
 		{//draw the color of checked color tf bp
-			colorTf->drawCurColorBpColor();
+			colorTf->showCurBpValue();
 		}
 		else if (event->type() == QEvent::MouseButtonRelease)
 		{//change the color of the checked color tf bp
-			QColor cur_color = colorTf->getCurColorBpColor();
+			QColor cur_color = colorTf->getCurBpValue();
 			QColor new_color = QColorDialog::getColor(cur_color, this, "select color");
 			if (new_color.isValid() && new_color != cur_color)
 			{
-				colorTf->setCurColorBpColor(new_color);
+				colorTf->changeCurBpValue(new_color);
 				colorTf->updateVolumeColor(vrProcess->getVolumeColorTf());
 				vrProcess->update();
 			}
@@ -107,7 +107,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 
 void MainWindow::onShowColorBpInfoAt(int idx)
 {
-	colorTf->showColorTfBpInfoAt(idx);
+	colorTf->showTfBpInfoAt(idx);
 }
 
 void MainWindow::onSaveAsSTL()
@@ -138,8 +138,8 @@ void MainWindow::onOpenFolderSlot()
 
 	ui->colortf_widget->setVisible(true);
 	vrProcess->volumeRenderFlow(folder_path);
-	colorTf->setMaxGrayValue(vrProcess->getMaxGrayValue());
-	colorTf->setMinGrayValue(vrProcess->getMinGrayValue());
+	colorTf->setMaxKey(vrProcess->getMaxGrayValue());
+	colorTf->setMinKey(vrProcess->getMinGrayValue());
 
 	colorTf->setBoneColorTf(vrProcess->getVolumeColorTf());
 	vrProcess->update();

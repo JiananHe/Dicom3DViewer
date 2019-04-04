@@ -27,7 +27,7 @@ endif()
 
 set( Srcs main.cpp mainwindow.cpp volumeRenderProcess.cpp colorTransferFunction.cpp)
 
-set( Hdrs mainwindow.h volumeRenderProcess.h transferFunction.h colorTransferFunction.h colorTfBreakPoints.h breakPoints.h)
+set( Hdrs mainwindow.h volumeRenderProcess.h  colorTransferFunction.h transferFunction.h breakPoints.h myQColor.h)
 
 set( MOC_Hdrs mainwindow.h )
 
