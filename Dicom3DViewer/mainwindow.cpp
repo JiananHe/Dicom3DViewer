@@ -19,15 +19,19 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(ui->actionOpenFolder, SIGNAL(triggered()), this, SLOT(onOpenFolderSlot()));	
 	connect(ui->actionBgColor, SIGNAL(triggered()), this, SLOT(onSetBgColorSlot()));
 
+	//set render style
 	connect(ui->actionBoneStyle, SIGNAL(triggered()), this, SLOT(onSetBoneStyle()));
 	connect(ui->actionBone2Style, SIGNAL(triggered()), this, SLOT(onSetBone2Style()));
 
+	//set mapper
 	connect(ui->actionRayCastMapper, SIGNAL(triggered()), this, SLOT(onSetRayCastMapper()));
 	connect(ui->actionSmartMapper, SIGNAL(triggered()), this, SLOT(onSetSmartMapper()));
 
+	//save as stl
+	connect(ui->actionSaveAsSTL, SIGNAL(triggered()), this, SLOT(onSaveAsSTL()));
 	connect(ui->colortf_verticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(onShowColorBpInfoAt(int)));
 	
-
+	
 }
 
 MainWindow::~MainWindow()
@@ -68,7 +72,6 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 		if (event->type() == QEvent::MouseMove)
 		{//change the position of the current color tf bp
 			int pos_x = ui->colortf_bar->mapFromGlobal(QCursor::pos()).x();
-			cout << "pos_x: " << pos_x << ", left: " << left_border << ", right: " << right_border << endl;
 			if(pos_x > left_border && pos_x <right_border)
 			{
 				colorTf->setCurColorBpGv(pos_x);
@@ -105,6 +108,11 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 void MainWindow::onShowColorBpInfoAt(int idx)
 {
 	colorTf->showColorTfBpInfoAt(idx);
+}
+
+void MainWindow::onSaveAsSTL()
+{
+	vrProcess->saveAsSTL();
 }
 
 

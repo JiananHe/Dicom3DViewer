@@ -15,6 +15,8 @@
 #include <vtkImageAccumulate.h>
 #include <vtkVolumeMapper.h>
 #include <vtkSmartVolumeMapper.h>
+#include <vtkSTLWriter.h>
+#include <vtkImageDataGeometryFilter.h>
 
 class VolumeRenderProcess : public QVTKWidget
 {
@@ -31,6 +33,8 @@ public:
 	double getMaxGrayValue();
 
 	void setVRMapper(const char *);
+
+	void saveAsSTL();
 
 	void update();
 

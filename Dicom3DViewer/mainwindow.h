@@ -41,6 +41,8 @@ private slots:
 
 	bool eventFilter(QObject *, QEvent *);
 	void onShowColorBpInfoAt(int);
+
+	void onSaveAsSTL();
 };
 
 #endif // MAINWINDOW_H

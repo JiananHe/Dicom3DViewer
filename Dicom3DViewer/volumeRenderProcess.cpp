@@ -120,6 +120,21 @@ void VolumeRenderProcess::setVRMapper(const char * str_mapper)
 	}
 }
 
+void VolumeRenderProcess::saveAsSTL()
+{
+	/*cout << "save as stl" << endl;
+	dicoms_reader->Update();
+	vtkSmartPointer<vtkImageDataGeometryFilter> imageDataGeometryFilter = vtkSmartPointer<vtkImageDataGeometryFilter>::New();
+	imageDataGeometryFilter->SetInputData(dicoms_reader->GetOutput());
+	imageDataGeometryFilter->Update();
+
+	vtkSmartPointer<vtkSTLWriter> stlWriter = vtkSmartPointer<vtkSTLWriter>::New();
+	stlWriter->SetFileName("D:\\Code\\Dicom3DViewer\\build\\demo.stl");
+	stlWriter->SetInputConnection(dicoms_reader->GetOutputPort());
+	stlWriter->Update();
+	stlWriter->Write();*/
+}
+
 void VolumeRenderProcess::update()
 {
 	my_vr_widget->GetRenderWindow()->Render();

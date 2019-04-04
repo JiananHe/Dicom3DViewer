@@ -205,7 +205,14 @@
     <property name="title">
      <string>Files</string>
     </property>
+    <widget class="QMenu" name="menuSave_as">
+     <property name="title">
+      <string>Save as</string>
+     </property>
+     <addaction name="actionSaveAsSTL"/>
+    </widget>
     <addaction name="actionOpenFolder"/>
+    <addaction name="menuSave_as"/>
    </widget>
    <widget class="QMenu" name="menuSetting">
     <property name="title">
@@ -281,6 +288,11 @@
   <action name="actionSmartMapper">
    <property name="text">
     <string>SmartMethod</string>
+   </property>
+  </action>
+  <action name="actionSaveAsSTL">
+   <property name="text">
+    <string>STL</string>
    </property>
   </action>
  </widget>

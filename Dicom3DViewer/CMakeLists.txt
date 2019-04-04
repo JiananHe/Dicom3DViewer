@@ -6,9 +6,11 @@ find_package(VTK REQUIRED)
 vtk_module_config(VTK
   vtkCommonCore
   vtkIOImage
+  vtkIOGeometry
   vtkIOXML
   vtkInteractionWidgets
   vtkFiltersSources
+  vtkFiltersGeometry
   vtkGUISupportQt
   vtkInteractionImage
   vtkInteractionStyle
@@ -23,9 +25,9 @@ if("${VTK_QT_VERSION}" STREQUAL "")
   message(FATAL_ERROR "VTK was not built with Qt")
 endif()
 
-set( Srcs main.cpp mainwindow.cpp )
+set( Srcs main.cpp mainwindow.cpp volumeRenderProcess.cpp colorTransferFunction.cpp)
 
-set( Hdrs mainwindow.h )
+set( Hdrs mainwindow.h volumeRenderProcess.h transferFunction.h colorTransferFunction.h colorTfBreakPoints.h breakPoints.h)
 
 set( MOC_Hdrs mainwindow.h )
 
