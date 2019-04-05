@@ -112,7 +112,7 @@ void ColorTransferFunction::showTfDiagram()
 		painter.setBrush(radialGradiant);
 
 		//the first and second params is the left top coordiantes of ellipse
-		painter.drawEllipse((w - 2 * d)*points[i] + d - d / 2, h / 2 - d / 2, d, d);
+		painter.drawEllipse(centre_x - d / 2, centre_y - d / 2, d, d);
 	}
 
 	//draw a circle for current color tf bp

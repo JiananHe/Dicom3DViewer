@@ -9,6 +9,7 @@
 #include "ui_mainwindow.h"
 #include "volumeRenderProcess.h"
 #include "colorTransferFunction.h"
+#include "opacityTransferFunction.h"
 
 using namespace std;
 
@@ -28,6 +29,8 @@ private:
     Ui::MainWindow *ui;
 	VolumeRenderProcess * vrProcess;
 	ColorTransferFunction * colorTf;
+	OpacityTransferFunctioin * opacityTf;
+	
 
 private slots:
 	void onOpenFolderSlot();
@@ -41,6 +44,7 @@ private slots:
 
 	bool eventFilter(QObject *, QEvent *);
 	void onShowColorBpInfoAt(int);
+	void onShowOpacityBpInfoAt(int);
 
 	void onSaveAsSTL();
 };

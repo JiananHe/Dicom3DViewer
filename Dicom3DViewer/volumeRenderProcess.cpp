@@ -36,12 +36,11 @@ void VolumeRenderProcess::volumeRenderFlow(QString folder_path)
 	vtkSmartPointer<vtkGPUVolumeRayCastMapper> RcGpuMapper = vtkSmartPointer<vtkGPUVolumeRayCastMapper>::New();
 	RcGpuMapper->SetInputConnection(dicoms_reader->GetOutputPort());
 
-	//set initial tf with bone style
-	volumeScalarOpacity->RemoveAllPoints();
+	/*volumeScalarOpacity->RemoveAllPoints();
 	volumeScalarOpacity->AddPoint(-3024, 0, 0.5, 0.0);
 	volumeScalarOpacity->AddPoint(-16, 0, .49, .61);
 	volumeScalarOpacity->AddPoint(641, .72, .5, 0.0);
-	volumeScalarOpacity->AddPoint(3071, .71, 0.5, 0.0);
+	volumeScalarOpacity->AddPoint(3071, .71, 0.5, 0.0);*/
 
 	//vtkVolumeProperty
 	volumeProperty->RemoveAllObservers();

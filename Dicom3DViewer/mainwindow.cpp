@@ -1,20 +1,29 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "transferFunction.h"
 
-int left_border = 10000;
-int right_border = 0;
+int color_left_border = 10000, color_right_border = 0, opacity_left_border = 10000, opacity_right_border = 0;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 	ui->colortf_widget->setVisible(false);
+	ui->opacitytf_widget->setVisible(false);
 
 	vrProcess = new VolumeRenderProcess(ui->volumeRenderWidget);
 	colorTf = new ColorTransferFunction(ui->colortf_widget);
+	opacityTf = new OpacityTransferFunctioin(ui->opacitytf_widget);
 
+	//color tf widget events
 	ui->colortf_bar->installEventFilter(this);
 	ui->colortf_curbp_color_label->installEventFilter(this);
+	connect(ui->colortf_verticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(onShowColorBpInfoAt(int)));
+
+	//opacity tf widget events
+	ui->opacitytf_bar->installEventFilter(this);
+	ui->opacitytf_curbp_opacity_label->installEventFilter(this);
+	connect(ui->opacitytf_verticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(onShowOpacityBpInfoAt(int)));
 	
 	connect(ui->actionOpenFolder, SIGNAL(triggered()), this, SLOT(onOpenFolderSlot()));	
 	connect(ui->actionBgColor, SIGNAL(triggered()), this, SLOT(onSetBgColorSlot()));
@@ -29,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	//save as stl
 	connect(ui->actionSaveAsSTL, SIGNAL(triggered()), this, SLOT(onSaveAsSTL()));
-	connect(ui->colortf_verticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(onShowColorBpInfoAt(int)));
+
 	
 	
 }
@@ -41,6 +50,7 @@ MainWindow::~MainWindow()
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 {
+	//color tf diagram
 	if (watched == ui->colortf_bar)
 	{
 		if (event->type() == QEvent::Paint)
@@ -55,8 +65,8 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 			{
 				colorTf->chooseOrAddBpAt(mp.x());
 				auto border = colorTf->getCurBpBorder();
-				left_border = get<0>(border);
-				right_border = get<1>(border);
+				color_left_border = get<0>(border);
+				color_right_border = get<1>(border);
 			}
 		}
 		if (event->type() == QEvent::KeyPress)
@@ -72,7 +82,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 		if (event->type() == QEvent::MouseMove)
 		{//change the position of the current color tf bp
 			int pos_x = ui->colortf_bar->mapFromGlobal(QCursor::pos()).x();
-			if(pos_x > left_border && pos_x <right_border)
+			if(pos_x > color_left_border && pos_x < color_right_border)
 			{
 				colorTf->changeCurBpKey(pos_x);
 				colorTf->updateVolumeColor(vrProcess->getVolumeColorTf());
@@ -82,6 +92,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 		return true;
 	}
 
+	//color tf bp color
 	if (watched == ui->colortf_curbp_color_label)
 	{
 		if (event->type() == QEvent::Paint)
@@ -102,12 +113,76 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 		return true;
 	}
 
+	//opacity tf diagram
+	if (watched == ui->opacitytf_bar)
+	{
+		int d = opacityTf->getD();
+		int x_max = ui->opacitytf_bar->geometry().width() - d;
+		int y_max = ui->opacitytf_bar->geometry().height() - d;
+
+		if (event->type() == QEvent::Paint)
+		{//draw opacity tf bar
+			opacityTf->showTfDiagram();
+		}
+
+		if (event->type() == QEvent::MouseButtonPress)
+		{//choose or create a opacity tf bp
+			QPoint mp = ui->opacitytf_bar->mapFromGlobal(QCursor::pos());
+			if (mp.x() > d && mp.x() < x_max && mp.y() > d && mp.y() < y_max)
+			{
+				opacityTf->chooseOrAddBpAt(mp.x(), mp.y());
+				auto border = opacityTf->getCurBpBorder();
+				opacity_left_border = get<0>(border);
+				opacity_right_border = get<1>(border);
+			}
+		}
+		if (event->type() == QEvent::KeyPress)
+		{//delete the checked opacity tf bp
+			QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+			if (keyEvent->key() == Qt::Key_Delete)
+			{
+				opacityTf->deleteCurTfBp();
+				opacityTf->updateVolumeOpacity(vrProcess->getVolumeOpacityTf());
+				vrProcess->update();
+			}
+
+		}
+		if (event->type() == QEvent::MouseMove)
+		{//change the position of the current opacity tf bp
+			QPoint m_pos = ui->opacitytf_bar->mapFromGlobal(QCursor::pos());
+			int pos_x = m_pos.x();
+			int pos_y = m_pos.y();
+			if (pos_x > opacity_left_border && pos_x < opacity_right_border && pos_y > d && pos_y < y_max)
+			{
+				opacityTf->changeCurBpKey(pos_x);
+				opacityTf->changeCurBpValue(pos_y);
+				opacityTf->updateVolumeOpacity(vrProcess->getVolumeOpacityTf());
+				vrProcess->update();
+			}
+		}
+	}
+
+	//opacity tf bp opacity
+	if (watched == ui->opacitytf_curbp_opacity_label)
+	{
+		if (event->type() == QEvent::Paint)
+		{//show the opacity of checked opacity tf bp
+			opacityTf->showCurBpValue();
+		}
+		return true;
+	}
+
 	return QMainWindow::eventFilter(watched, event);
 }
 
 void MainWindow::onShowColorBpInfoAt(int idx)
 {
 	colorTf->showTfBpInfoAt(idx);
+}
+
+void MainWindow::onShowOpacityBpInfoAt(int idx)
+{
+	opacityTf->showTfBpInfoAt(idx);
 }
 
 void MainWindow::onSaveAsSTL()
@@ -136,24 +211,36 @@ void MainWindow::onOpenFolderSlot()
 	QString folder_path = QFileDialog::getExistingDirectory(this, tr("Open DICOM Folder"), 
 		"C:\\Users\\13249\\Documents\\VTK_Related\\dataset", QFileDialog::ShowDirsOnly);
 
+	//build the render pipeline
 	ui->colortf_widget->setVisible(true);
+	ui->opacitytf_widget->setVisible(true);
 	vrProcess->volumeRenderFlow(folder_path);
-	colorTf->setMaxKey(vrProcess->getMaxGrayValue());
-	colorTf->setMinKey(vrProcess->getMinGrayValue());
 
+	double max_gv = vrProcess->getMaxGrayValue();
+	double min_gv = vrProcess->getMinGrayValue();
+	colorTf->setMaxKey(max_gv);
+	colorTf->setMinKey(min_gv);
+	opacityTf->setMaxKey(max_gv);
+	opacityTf->setMinKey(min_gv);
+
+	//set initial render style
 	colorTf->setBoneColorTf(vrProcess->getVolumeColorTf());
+	opacityTf->setBoneOpacityTf(vrProcess->getVolumeOpacityTf());
+
 	vrProcess->update();
 }
 
 void MainWindow::onSetBoneStyle()
 {
 	colorTf->setBoneColorTf(vrProcess->getVolumeColorTf());
+	opacityTf->setBoneOpacityTf(vrProcess->getVolumeOpacityTf());
 	vrProcess->update();
 }
 
 void MainWindow::onSetBone2Style()
 {
 	colorTf->setBone2ColorTf(vrProcess->getVolumeColorTf());
+	opacityTf->setBone2OpacityTf(vrProcess->getVolumeOpacityTf());
 	vrProcess->update();
 }
 
