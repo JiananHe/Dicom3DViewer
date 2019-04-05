@@ -184,3 +184,23 @@ void OpacityTransferFunctioin::chooseOrAddBpAt(int x, int y)
 		showTfBpInfoAt(cur_bp_idx);
 	}
 }
+
+//change currrent opacity bp opacity according to falg: downward(-1), upward(1)
+void OpacityTransferFunctioin::changeCurBpValueByboard(int flag)
+{
+	double cur_key = tf_bps->getBpKeyAt(cur_bp_idx, 0);
+	double cur_value = tf_bps->getBpValueAt(cur_bp_idx);
+	double move_gap = 0.02;
+	if (flag == -1)
+	{
+		tf_bps->deleteBpAt(cur_bp_idx);
+		tf_bps->insertBreakPoint(cur_key, cur_value - move_gap < 0 ? 0 : cur_value - move_gap);
+		showTfBpInfoAt(cur_bp_idx);
+	}
+	if (flag == 1)
+	{
+		tf_bps->deleteBpAt(cur_bp_idx);
+		tf_bps->insertBreakPoint(cur_key, cur_value + move_gap > 1 ? 1 : cur_value + move_gap);
+		showTfBpInfoAt(cur_bp_idx);
+	}
+}

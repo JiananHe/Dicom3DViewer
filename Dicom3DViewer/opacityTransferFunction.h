@@ -25,6 +25,8 @@ public:
 	void changeCurBpValue(int y);
 	void chooseOrAddBpAt(int x, int y);
 
+	void changeCurBpValueByboard(int flag);
+
 private:
 	double opacityToY(double opacity)
 	{

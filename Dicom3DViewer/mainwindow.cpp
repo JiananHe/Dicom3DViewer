@@ -53,6 +53,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 	//color tf diagram
 	if (watched == ui->colortf_bar)
 	{
+
 		if (event->type() == QEvent::Paint)
 		{//draw color tf bar
 			colorTf->showTfDiagram();
@@ -70,11 +71,27 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 			}
 		}
 		if (event->type() == QEvent::KeyPress)
-		{//delete the checked color tf bp
+		{
 			QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+			//delete the checked color tf bp
 			if (keyEvent->key() == Qt::Key_Delete)
 			{
-				colorTf->deleteCurTfBp();
+				if (colorTf->deleteCurTfBp())
+				{
+					colorTf->updateVolumeColor(vrProcess->getVolumeColorTf());
+					vrProcess->update();
+				}
+			}
+			//change current bp gray value through keyboard
+			if (keyEvent->key() == Qt::Key_Left)
+			{
+				colorTf->changeCurBpKeyByKeyboard(-1);
+				colorTf->updateVolumeColor(vrProcess->getVolumeColorTf());
+				vrProcess->update();
+			}
+			if (keyEvent->key() == Qt::Key_Right)
+			{
+				colorTf->changeCurBpKeyByKeyboard(1);
 				colorTf->updateVolumeColor(vrProcess->getVolumeColorTf());
 				vrProcess->update();
 			}
@@ -82,7 +99,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 		if (event->type() == QEvent::MouseMove)
 		{//change the position of the current color tf bp
 			int pos_x = ui->colortf_bar->mapFromGlobal(QCursor::pos()).x();
-			if(pos_x > color_left_border && pos_x < color_right_border)
+			if(pos_x >= color_left_border && pos_x <= color_right_border)
 			{
 				colorTf->changeCurBpKey(pos_x);
 				colorTf->updateVolumeColor(vrProcess->getVolumeColorTf());
@@ -137,11 +154,40 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 			}
 		}
 		if (event->type() == QEvent::KeyPress)
-		{//delete the checked opacity tf bp
+		{
 			QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+			//delete the checked opacity tf bp
 			if (keyEvent->key() == Qt::Key_Delete)
 			{
-				opacityTf->deleteCurTfBp();
+				if (opacityTf->deleteCurTfBp())
+				{
+					opacityTf->updateVolumeOpacity(vrProcess->getVolumeOpacityTf());
+					vrProcess->update();
+				}
+			}
+			//change current bp gray value through keyboard
+			if (keyEvent->key() == Qt::Key_Left)
+			{
+				opacityTf->changeCurBpKeyByKeyboard(-1);
+				opacityTf->updateVolumeOpacity(vrProcess->getVolumeOpacityTf());
+				vrProcess->update();
+			}
+			if (keyEvent->key() == Qt::Key_Right)
+			{
+				opacityTf->changeCurBpKeyByKeyboard(1);
+				opacityTf->updateVolumeOpacity(vrProcess->getVolumeOpacityTf());
+				vrProcess->update();
+			}
+			//change current bp opacity through keyboard
+			if (keyEvent->key() == Qt::Key_Down)
+			{
+				opacityTf->changeCurBpValueByboard(-1);
+				opacityTf->updateVolumeOpacity(vrProcess->getVolumeOpacityTf());
+				vrProcess->update();
+			}
+			if (keyEvent->key() == Qt::Key_Up)
+			{
+				opacityTf->changeCurBpValueByboard(1);
 				opacityTf->updateVolumeOpacity(vrProcess->getVolumeOpacityTf());
 				vrProcess->update();
 			}
@@ -152,7 +198,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 			QPoint m_pos = ui->opacitytf_bar->mapFromGlobal(QCursor::pos());
 			int pos_x = m_pos.x();
 			int pos_y = m_pos.y();
-			if (pos_x > opacity_left_border && pos_x < opacity_right_border && pos_y > d && pos_y < y_max)
+			if (pos_x >= opacity_left_border && pos_x <= opacity_right_border && pos_y >= d && pos_y <= y_max)
 			{
 				opacityTf->changeCurBpKey(pos_x);
 				opacityTf->changeCurBpValue(pos_y);

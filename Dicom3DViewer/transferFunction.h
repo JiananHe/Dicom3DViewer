@@ -23,9 +23,10 @@ public:
 	tuple<int, int> getCurBpBorder();
 	void changeCurBpValue(T new_value);
 	void changeCurBpKey(int coord);
+	void changeCurBpKeyByKeyboard(int flag);
 
 	void chooseOrAddBpAt(int coord);
-	void deleteCurTfBp();
+	bool deleteCurTfBp();
 
 	void showTfBpInfoAt(int idx);
 	virtual void showTfDiagram() = 0;
@@ -91,10 +92,15 @@ template<typename T>
 inline tuple<int, int> TransferFunction<T>::getCurBpBorder()
 {
 	double left_key = tf_bps->getBpKeyAt(cur_bp_idx, -1);
+	if (left_key == tf_bps->getBpKeyAt(0, 0))
+		left_key = min_key;
+
 	double right_key = tf_bps->getBpKeyAt(cur_bp_idx, 1);
+	if (right_key == tf_bps->getBpKeyAt(tf_bps->getMapLength() - 1, 0))
+		right_key = max_key;
 
 	int left_border = (left_key - min_key) / (max_key - min_key) * (w - 2 * d) + d + 0.5;
-	int right_border = (right_key - min_key) / (max_key - min_key) * (w - 2 * d) + d + 0.5;
+	int right_border = (right_key - min_key) / (max_key - min_key) * (w - 2 * d) + d;
 	
 	return make_tuple(left_border, right_border);
 }
@@ -124,6 +130,34 @@ inline void TransferFunction<T>::changeCurBpKey(int coord)
 	}
 }
 
+//change current bp key according to flag: left(-1) or right(1)
+template<typename T>
+inline void TransferFunction<T>::changeCurBpKeyByKeyboard(int flag)
+{
+	double cur_key = tf_bps->getBpKeyAt(cur_bp_idx, 0);
+	double move_gap = 1;
+	if (flag == -1)
+	{
+		if (cur_key - move_gap >= min_key && tf_bps->findElementInApprox(cur_key - move_gap, move_gap - 0.01) == -1)
+		{
+			T old_value = tf_bps->getBpValueAt(cur_bp_idx);
+			tf_bps->deleteBpAt(cur_bp_idx);
+			tf_bps->insertBreakPoint(cur_key - move_gap, old_value);
+			showTfBpInfoAt(cur_bp_idx);
+		}
+	}
+	if (flag == 1)
+	{
+		if (cur_key + move_gap <= max_key && tf_bps->findElementInApprox(cur_key + move_gap, move_gap - 0.01) == -1)
+		{
+			T old_value = tf_bps->getBpValueAt(cur_bp_idx);
+			tf_bps->deleteBpAt(cur_bp_idx);
+			tf_bps->insertBreakPoint(cur_key + move_gap, old_value);
+			showTfBpInfoAt(cur_bp_idx);
+		}
+	}
+}
+
 template<typename T>
 inline void TransferFunction<T>::chooseOrAddBpAt(int coord)
 {
@@ -149,11 +183,17 @@ inline void TransferFunction<T>::chooseOrAddBpAt(int coord)
 }
 
 template<typename T>
-inline void TransferFunction<T>::deleteCurTfBp()
+inline bool TransferFunction<T>::deleteCurTfBp()
 {
-	tf_bps->deleteBpAt(cur_bp_idx);
-	cur_bp_idx = 0;
-	showTfBpInfoAt(cur_bp_idx);
+	if (tf_bps->getMapLength() <= 1)
+		return false;
+	else
+	{
+		tf_bps->deleteBpAt(cur_bp_idx);
+		cur_bp_idx = 0;
+		showTfBpInfoAt(cur_bp_idx);
+		return true;
+	}
 }
 
 template<typename T>

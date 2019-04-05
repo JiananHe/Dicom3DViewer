@@ -33,6 +33,9 @@
       <height>131</height>
      </rect>
     </property>
+    <property name="focusPolicy">
+     <enum>Qt::ClickFocus</enum>
+    </property>
     <widget class="QLabel" name="colortf_min_label">
      <property name="geometry">
       <rect>
@@ -199,6 +202,9 @@
       <width>561</width>
       <height>151</height>
      </rect>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::ClickFocus</enum>
     </property>
     <widget class="QFrame" name="opacitytf_bar">
      <property name="geometry">
