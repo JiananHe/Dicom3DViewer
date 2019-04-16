@@ -1,15 +1,15 @@
 #include "opacityTransferFunction.h"
 
-OpacityTransferFunctioin::OpacityTransferFunctioin(QWidget * opacity_tf_widget)
+OpacityTransferFunctioin::OpacityTransferFunctioin(QWidget * widget, QString name)
 {
-	tf_widgets = opacity_tf_widget;
-	tf_diagram = tf_widgets->findChild<QFrame *>("opacitytf_bar");
-	min_key_label = tf_widgets->findChild<QLabel*>("opacitytf_min_label");
-	max_key_label = tf_widgets->findChild<QLabel*>("opacitytf_max_label");
-	cur_bpIdx_label = tf_widgets->findChild<QLabel*>("opacitytf_curbp_idx_label");
-	cur_bpValue_label = tf_widgets->findChild<QLabel*>("opacitytf_curbp_opacity_label");
-	cur_bpKey_label = tf_widgets->findChild<QLabel*>("opacitytf_curbp_x_label");
-	tf_scrollBar = tf_widgets->findChild< QScrollBar*>("opacitytf_verticalScrollBar");
+	tf_widgets = widget;
+	tf_diagram = tf_widgets->findChild<QFrame *>(name + "tf_bar");
+	min_key_label = tf_widgets->findChild<QLabel*>(name + "tf_min_label");
+	max_key_label = tf_widgets->findChild<QLabel*>(name + "tf_max_label");
+	cur_bpIdx_label = tf_widgets->findChild<QLabel*>(name + "tf_curbp_idx_label");
+	cur_bpValue_label = tf_widgets->findChild<QLabel*>(name + "tf_curbp_" + name + "_label");
+	cur_bpKey_label = tf_widgets->findChild<QLabel*>(name + "tf_curbp_x_label");
+	tf_scrollBar = tf_widgets->findChild< QScrollBar*>(name + "tf_verticalScrollBar");
 
 	d = 11;
 	w = tf_diagram->geometry().width();
@@ -62,13 +62,29 @@ void OpacityTransferFunctioin::setBone2OpacityTf(vtkPiecewiseFunction * volumeOp
 	showTfBpInfoAt(0);
 }
 
+void OpacityTransferFunctioin::setCustomizedOpacityTf(vtkPiecewiseFunction * volumeOpacity, map<double, double> my_tf_bps)
+{
+	tf_bps->removeAllPoints();
+	map<double, double>::iterator iter;
+	for (iter = my_tf_bps.begin(); iter != my_tf_bps.end(); ++iter)
+	{
+		this->tf_bps->insertBreakPoint(iter->first, iter->second);
+	}
+	updateVolumeOpacity(volumeOpacity);
+
+	//show info of the first opacity bp
+	tf_scrollBar->setValue(0);
+	cur_bp_idx = 0;
+	showTfBpInfoAt(0);
+}
+
 void OpacityTransferFunctioin::updateVolumeOpacity(vtkPiecewiseFunction * volumeOpacity)
 {
 	volumeOpacity->RemoveAllPoints();
-	map<double, double> cur_colortf_bps = tf_bps->getBreakPointsMap();
+	map<double, double> cur_tf_bps = tf_bps->getBreakPointsMap();
 	map<double, double>::iterator iter;
 
-	for (iter = cur_colortf_bps.begin(); iter != cur_colortf_bps.end(); ++iter)
+	for (iter = cur_tf_bps.begin(); iter != cur_tf_bps.end(); ++iter)
 	{
 		volumeOpacity->AddPoint(iter->first, iter->second, 0.5, 0);
 	}

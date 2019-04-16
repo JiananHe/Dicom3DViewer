@@ -15,6 +15,9 @@
 #include <vtkImageAccumulate.h>
 #include <vtkVolumeMapper.h>
 #include <vtkSmartVolumeMapper.h>
+#include <vtkImageGaussianSmooth.h>
+#include <vtkImageGradient.h>
+#include <vtkImageMagnitude.h>
 #include <vtkSTLWriter.h>
 #include <vtkImageDataGeometryFilter.h>
 
@@ -24,13 +27,19 @@ public:
 	explicit VolumeRenderProcess(QVTKWidget *);
 	~VolumeRenderProcess();
 	void volumeRenderFlow(QString );
+	void calcGradientMagnitude();
 	void setBgColor(QColor );
 
 	vtkColorTransferFunction* getVolumeColorTf();
 	vtkPiecewiseFunction* getVolumeOpacityTf();
+	vtkPiecewiseFunction* getVolumeGradientTf();
+
+	vtkDICOMImageReader* getDicomReader();
 
 	double getMinGrayValue();
 	double getMaxGrayValue();
+	double getMinGradientValue();
+	double getMaxGradientValue();
 
 	void setVRMapper(const char *);
 
@@ -42,9 +51,11 @@ private:
 	QVTKWidget* my_vr_widget;
 	vtkSmartPointer<vtkDICOMImageReader> dicoms_reader;
 	vtkSmartPointer<vtkRenderer> volume_render;
+	vtkSmartPointer<vtkImageMagnitude> imgMagnitude;
 
 	vtkSmartPointer<vtkVolumeProperty> volumeProperty;
 	vtkSmartPointer<vtkColorTransferFunction> volumeColor;
 	vtkSmartPointer<vtkPiecewiseFunction> volumeScalarOpacity;
+	vtkSmartPointer<vtkPiecewiseFunction> volumeGradientOpacity;
 	vtkSmartPointer<vtkVolume> volume;
 };

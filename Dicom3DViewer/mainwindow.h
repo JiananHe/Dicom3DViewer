@@ -10,6 +10,7 @@
 #include "volumeRenderProcess.h"
 #include "colorTransferFunction.h"
 #include "opacityTransferFunction.h"
+#include "dicomSeriesReader.h"
 
 using namespace std;
 
@@ -30,6 +31,8 @@ private:
 	VolumeRenderProcess * vrProcess;
 	ColorTransferFunction * colorTf;
 	OpacityTransferFunctioin * opacityTf;
+	OpacityTransferFunctioin * gradientTf;
+	DicomSeriesReader * dicomSeriesReader;
 	
 
 private slots:
@@ -45,8 +48,8 @@ private slots:
 	bool eventFilter(QObject *, QEvent *);
 	void onShowColorBpInfoAt(int);
 	void onShowOpacityBpInfoAt(int);
+	void onShowGradientBpInfoAt(int);
 
-	void onSaveAsSTL();
 };
 
 #endif // MAINWINDOW_H

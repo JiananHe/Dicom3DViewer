@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1277</width>
-    <height>728</height>
+    <width>1920</width>
+    <height>1000</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,19 +17,343 @@
    <widget class="QVTKWidget" name="volumeRenderWidget">
     <property name="geometry">
      <rect>
-      <x>580</x>
-      <y>20</y>
-      <width>611</width>
-      <height>611</height>
+      <x>480</x>
+      <y>10</y>
+      <width>791</width>
+      <height>791</height>
      </rect>
     </property>
+   </widget>
+   <widget class="QVTKWidget" name="dicomSlicerWidget">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>34</y>
+      <width>431</width>
+      <height>431</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QVTKWidget" name="dicomEdgeWidget">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>490</y>
+      <width>431</width>
+      <height>431</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="slice_max_label">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>510</y>
+      <width>51</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="slice_min_label">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>510</y>
+      <width>51</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>14</y>
+      <width>51</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>坐标：</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="dicom_coords_label">
+    <property name="geometry">
+     <rect>
+      <x>71</x>
+      <y>14</y>
+      <width>111</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>14</y>
+      <width>61</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>灰度值：</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="dicom_gray_label">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>14</y>
+      <width>61</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_7">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>14</y>
+      <width>41</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>梯度：</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="dicom_gradient_label">
+    <property name="geometry">
+     <rect>
+      <x>380</x>
+      <y>14</y>
+      <width>61</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QSlider" name="dicom_series_horizontalSlider">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>468</y>
+      <width>371</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QWidget" name="opacitytf_widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>1300</x>
+      <y>250</y>
+      <width>601</width>
+      <height>151</height>
+     </rect>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::ClickFocus</enum>
+    </property>
+    <widget class="QFrame" name="opacitytf_bar">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>50</y>
+       <width>581</width>
+       <height>81</height>
+      </rect>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::ClickFocus</enum>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+    </widget>
+    <widget class="QScrollBar" name="opacitytf_verticalScrollBar">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>20</y>
+       <width>41</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="opacitytf_point_label">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>30</y>
+       <width>51</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Point:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="opacitytf_curbp_idx_label">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>29</y>
+       <width>31</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Panel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Sunken</enum>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="opacitytf_opacity_label">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>30</y>
+       <width>61</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Opacity:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="opacitytf_curbp_opacity_label">
+     <property name="geometry">
+      <rect>
+       <x>362</x>
+       <y>28</y>
+       <width>51</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="opacitytf_x_label">
+     <property name="geometry">
+      <rect>
+       <x>420</x>
+       <y>30</y>
+       <width>91</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Gray Value:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="opacitytf_curbp_x_label">
+     <property name="geometry">
+      <rect>
+       <x>510</x>
+       <y>30</y>
+       <width>51</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="opacitytf_min_label">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>126</y>
+       <width>71</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="opacitytf_max_label">
+     <property name="geometry">
+      <rect>
+       <x>520</x>
+       <y>126</y>
+       <width>61</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label">
+     <property name="geometry">
+      <rect>
+       <x>570</x>
+       <y>111</y>
+       <width>16</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>0</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_2">
+     <property name="geometry">
+      <rect>
+       <x>570</x>
+       <y>51</y>
+       <width>16</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>1</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QWidget" name="colortf_widget" native="true">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>40</y>
-      <width>561</width>
+      <x>1300</x>
+      <y>80</y>
+      <width>601</width>
       <height>131</height>
      </rect>
     </property>
@@ -55,9 +379,9 @@
     <widget class="QLabel" name="colortf_max_label">
      <property name="geometry">
       <rect>
-       <x>510</x>
+       <x>520</x>
        <y>110</y>
-       <width>54</width>
+       <width>61</width>
        <height>16</height>
       </rect>
      </property>
@@ -73,7 +397,7 @@
       <rect>
        <x>0</x>
        <y>60</y>
-       <width>551</width>
+       <width>581</width>
        <height>51</height>
       </rect>
      </property>
@@ -194,24 +518,143 @@
      </property>
     </widget>
    </widget>
-   <widget class="QWidget" name="opacitytf_widget" native="true">
+   <widget class="QFrame" name="frame">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>210</y>
-      <width>561</width>
+      <x>480</x>
+      <y>800</y>
+      <width>801</width>
+      <height>131</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+    <widget class="QLabel" name="label_9">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>151</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>不透明传递函数生成：</string>
+     </property>
+    </widget>
+    <widget class="QFrame" name="frame_2">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>451</width>
+       <height>71</height>
+      </rect>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <widget class="QLabel" name="label_11">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>72</width>
+        <height>15</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>材质提取：</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_10">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>45</y>
+        <width>72</width>
+        <height>15</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>灰度值：</string>
+      </property>
+     </widget>
+     <widget class="QTextEdit" name="textEdit">
+      <property name="geometry">
+       <rect>
+        <x>70</x>
+        <y>35</y>
+        <width>71</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QTextEdit" name="textEdit_2">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>35</y>
+        <width>71</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_12">
+      <property name="geometry">
+       <rect>
+        <x>160</x>
+        <y>45</y>
+        <width>41</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>阈值：</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton">
+      <property name="geometry">
+       <rect>
+        <x>330</x>
+        <y>35</y>
+        <width>101</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>绘制选定材质</string>
+      </property>
+     </widget>
+    </widget>
+    <zorder>frame_2</zorder>
+    <zorder>label_9</zorder>
+   </widget>
+   <widget class="QWidget" name="gradienttf_widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>1300</x>
+      <y>440</y>
+      <width>601</width>
       <height>151</height>
      </rect>
     </property>
     <property name="focusPolicy">
      <enum>Qt::ClickFocus</enum>
     </property>
-    <widget class="QFrame" name="opacitytf_bar">
+    <widget class="QFrame" name="gradienttf_bar">
      <property name="geometry">
       <rect>
        <x>0</x>
        <y>50</y>
-       <width>551</width>
+       <width>581</width>
        <height>81</height>
       </rect>
      </property>
@@ -225,10 +668,10 @@
       <enum>QFrame::Raised</enum>
      </property>
     </widget>
-    <widget class="QScrollBar" name="opacitytf_verticalScrollBar">
+    <widget class="QScrollBar" name="gradienttf_verticalScrollBar">
      <property name="geometry">
       <rect>
-       <x>190</x>
+       <x>158</x>
        <y>20</y>
        <width>41</width>
        <height>31</height>
@@ -238,10 +681,10 @@
       <enum>Qt::Horizontal</enum>
      </property>
     </widget>
-    <widget class="QLabel" name="opacitytf_point_label">
+    <widget class="QLabel" name="gradienttf_point_label">
      <property name="geometry">
       <rect>
-       <x>240</x>
+       <x>208</x>
        <y>30</y>
        <width>51</width>
        <height>16</height>
@@ -251,10 +694,10 @@
       <string>Point:</string>
      </property>
     </widget>
-    <widget class="QLabel" name="opacitytf_curbp_idx_label">
+    <widget class="QLabel" name="gradienttf_curbp_idx_label">
      <property name="geometry">
       <rect>
-       <x>290</x>
+       <x>258</x>
        <y>29</y>
        <width>31</width>
        <height>21</height>
@@ -270,10 +713,10 @@
       <string/>
      </property>
     </widget>
-    <widget class="QLabel" name="opacitytf_opacity_label">
+    <widget class="QLabel" name="gradienttf_opacity_label">
      <property name="geometry">
       <rect>
-       <x>330</x>
+       <x>298</x>
        <y>30</y>
        <width>61</width>
        <height>16</height>
@@ -283,12 +726,12 @@
       <string>Opacity:</string>
      </property>
     </widget>
-    <widget class="QLabel" name="opacitytf_curbp_opacity_label">
+    <widget class="QLabel" name="gradienttf_curbp_gradient_label">
      <property name="geometry">
       <rect>
-       <x>392</x>
+       <x>360</x>
        <y>28</y>
-       <width>51</width>
+       <width>41</width>
        <height>21</height>
       </rect>
      </property>
@@ -296,25 +739,25 @@
       <string/>
      </property>
     </widget>
-    <widget class="QLabel" name="opacitytf_x_label">
+    <widget class="QLabel" name="gradienttf_x_label">
      <property name="geometry">
       <rect>
-       <x>450</x>
+       <x>415</x>
        <y>30</y>
-       <width>16</width>
-       <height>16</height>
+       <width>71</width>
+       <height>20</height>
       </rect>
      </property>
      <property name="text">
-      <string>X:</string>
+      <string>Gradient:</string>
      </property>
     </widget>
-    <widget class="QLabel" name="opacitytf_curbp_x_label">
+    <widget class="QLabel" name="gradienttf_curbp_x_label">
      <property name="geometry">
       <rect>
-       <x>470</x>
+       <x>490</x>
        <y>30</y>
-       <width>72</width>
+       <width>51</width>
        <height>16</height>
       </rect>
      </property>
@@ -322,7 +765,7 @@
       <string/>
      </property>
     </widget>
-    <widget class="QLabel" name="opacitytf_min_label">
+    <widget class="QLabel" name="gradienttf_min_label">
      <property name="geometry">
       <rect>
        <x>0</x>
@@ -335,12 +778,12 @@
       <string/>
      </property>
     </widget>
-    <widget class="QLabel" name="opacitytf_max_label">
+    <widget class="QLabel" name="gradienttf_max_label">
      <property name="geometry">
       <rect>
-       <x>510</x>
+       <x>520</x>
        <y>126</y>
-       <width>54</width>
+       <width>61</width>
        <height>16</height>
       </rect>
      </property>
@@ -348,10 +791,10 @@
       <string/>
      </property>
     </widget>
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="label_17">
      <property name="geometry">
       <rect>
-       <x>542</x>
+       <x>570</x>
        <y>111</y>
        <width>16</width>
        <height>16</height>
@@ -361,10 +804,10 @@
       <string>0</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="label_18">
      <property name="geometry">
       <rect>
-       <x>542</x>
+       <x>570</x>
        <y>51</y>
        <width>16</width>
        <height>16</height>
@@ -381,13 +824,13 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1277</width>
+     <width>1920</width>
      <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">
     <property name="title">
-     <string>Files</string>
+     <string>文件(&amp;F)</string>
     </property>
     <widget class="QMenu" name="menuSave_as">
      <property name="title">
@@ -400,7 +843,7 @@
    </widget>
    <widget class="QMenu" name="menuSetting">
     <property name="title">
-     <string>Setting</string>
+     <string>工具(&amp;T)</string>
     </property>
     <widget class="QMenu" name="menuRenderStyles">
      <property name="title">
@@ -422,8 +865,20 @@
     <addaction name="actionBgColor"/>
     <addaction name="menuMapper"/>
    </widget>
+   <widget class="QMenu" name="menu_E">
+    <property name="title">
+     <string>编辑(&amp;E)</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_H">
+    <property name="title">
+     <string>帮助(&amp;H)</string>
+    </property>
+   </widget>
    <addaction name="menuFiles"/>
+   <addaction name="menu_E"/>
    <addaction name="menuSetting"/>
+   <addaction name="menu_H"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">

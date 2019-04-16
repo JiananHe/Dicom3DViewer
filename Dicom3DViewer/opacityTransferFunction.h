@@ -11,12 +11,15 @@ using namespace std;
 class OpacityTransferFunctioin : public TransferFunction<double>
 {
 public:
-	explicit OpacityTransferFunctioin(QWidget *);
+	explicit OpacityTransferFunctioin(QWidget *, QString);
 	~OpacityTransferFunctioin();
 
 	void setBoneOpacityTf(vtkPiecewiseFunction *);
 	void setBone2OpacityTf(vtkPiecewiseFunction *);
 	void updateVolumeOpacity(vtkPiecewiseFunction *);
+
+
+	void setCustomizedOpacityTf(vtkPiecewiseFunction *, map<double, double>);
 
 	void showTfDiagram();
 	void showCurBpValue();

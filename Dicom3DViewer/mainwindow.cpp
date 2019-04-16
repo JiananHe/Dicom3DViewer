@@ -2,30 +2,42 @@
 #include "ui_mainwindow.h"
 #include "transferFunction.h"
 
-int color_left_border = 10000, color_right_border = 0, opacity_left_border = 10000, opacity_right_border = 0;
+int color_left_border = 10000, color_right_border = 0, opacity_left_border = 10000, opacity_right_border = 0, gradient_left_border = 10000, gradient_right_border = 0;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+	setWindowState(Qt::WindowMaximized);
 	ui->colortf_widget->setVisible(false);
 	ui->opacitytf_widget->setVisible(false);
 
 	vrProcess = new VolumeRenderProcess(ui->volumeRenderWidget);
 	colorTf = new ColorTransferFunction(ui->colortf_widget);
-	opacityTf = new OpacityTransferFunctioin(ui->opacitytf_widget);
+	opacityTf = new OpacityTransferFunctioin(ui->opacitytf_widget, "opacity");
+	gradientTf = new OpacityTransferFunctioin(ui->gradienttf_widget, "gradient");
+	dicomSeriesReader = new DicomSeriesReader(ui->dicomSlicerWidget);
 
 	//color tf widget events
 	ui->colortf_bar->installEventFilter(this);
 	ui->colortf_curbp_color_label->installEventFilter(this);
 	connect(ui->colortf_verticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(onShowColorBpInfoAt(int)));
 
-	//opacity tf widget events
+	//scalar opacity tf widget events
 	ui->opacitytf_bar->installEventFilter(this);
 	ui->opacitytf_curbp_opacity_label->installEventFilter(this);
 	connect(ui->opacitytf_verticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(onShowOpacityBpInfoAt(int)));
+
+	//gradient opacity tf widget events
+	ui->gradienttf_bar->installEventFilter(this);
+	ui->gradienttf_curbp_gradient_label->installEventFilter(this);
+	connect(ui->gradienttf_verticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(onShowGradientBpInfoAt(int)));
 	
-	connect(ui->actionOpenFolder, SIGNAL(triggered()), this, SLOT(onOpenFolderSlot()));	
+	//dicom series reader
+	ui->dicomSlicerWidget->installEventFilter(this);
+
+	//*******************menu****************
+	connect(ui->actionOpenFolder, SIGNAL(triggered()), this, SLOT(onOpenFolderSlot()));
 	connect(ui->actionBgColor, SIGNAL(triggered()), this, SLOT(onSetBgColorSlot()));
 
 	//set render style
@@ -36,11 +48,6 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(ui->actionRayCastMapper, SIGNAL(triggered()), this, SLOT(onSetRayCastMapper()));
 	connect(ui->actionSmartMapper, SIGNAL(triggered()), this, SLOT(onSetSmartMapper()));
 
-	//save as stl
-	connect(ui->actionSaveAsSTL, SIGNAL(triggered()), this, SLOT(onSaveAsSTL()));
-
-	
-	
 }
 
 MainWindow::~MainWindow()
@@ -218,6 +225,105 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 		return true;
 	}
 
+	//gradient tf diagram
+	if (watched == ui->gradienttf_bar)
+	{
+		int d = gradientTf->getD();
+		int x_max = ui->gradienttf_bar->geometry().width() - d;
+		int y_max = ui->gradienttf_bar->geometry().height() - d;
+
+		if (event->type() == QEvent::Paint)
+		{//draw gradient tf bar
+			gradientTf->showTfDiagram();
+		}
+
+		if (event->type() == QEvent::MouseButtonPress)
+		{//choose or create a gradient tf bp
+			QPoint mp = ui->gradienttf_bar->mapFromGlobal(QCursor::pos());
+			if (mp.x() > d && mp.x() < x_max && mp.y() > d && mp.y() < y_max)
+			{
+				gradientTf->chooseOrAddBpAt(mp.x(), mp.y());
+				auto border = gradientTf->getCurBpBorder();
+				gradient_left_border = get<0>(border);
+				gradient_right_border = get<1>(border);
+			}
+		}
+		if (event->type() == QEvent::KeyPress)
+		{
+			QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+			//delete the checked gradient tf bp
+			if (keyEvent->key() == Qt::Key_Delete)
+			{
+				if (gradientTf->deleteCurTfBp())
+				{
+					gradientTf->updateVolumeOpacity(vrProcess->getVolumeGradientTf());
+					vrProcess->update();
+				}
+			}
+			//change current bp gray value through keyboard
+			if (keyEvent->key() == Qt::Key_Left)
+			{
+				gradientTf->changeCurBpKeyByKeyboard(-1);
+				gradientTf->updateVolumeOpacity(vrProcess->getVolumeGradientTf());
+				vrProcess->update();
+			}
+			if (keyEvent->key() == Qt::Key_Right)
+			{
+				gradientTf->changeCurBpKeyByKeyboard(1);
+				gradientTf->updateVolumeOpacity(vrProcess->getVolumeGradientTf());
+				vrProcess->update();
+			}
+			//change current bp gradient through keyboard
+			if (keyEvent->key() == Qt::Key_Down)
+			{
+				gradientTf->changeCurBpValueByboard(-1);
+				gradientTf->updateVolumeOpacity(vrProcess->getVolumeGradientTf());
+				vrProcess->update();
+			}
+			if (keyEvent->key() == Qt::Key_Up)
+			{
+				gradientTf->changeCurBpValueByboard(1);
+				gradientTf->updateVolumeOpacity(vrProcess->getVolumeGradientTf());
+				vrProcess->update();
+			}
+
+		}
+		if (event->type() == QEvent::MouseMove)
+		{//change the position of the current gradient tf bp
+			QPoint m_pos = ui->gradienttf_bar->mapFromGlobal(QCursor::pos());
+			int pos_x = m_pos.x();
+			int pos_y = m_pos.y();
+			if (pos_x >= gradient_left_border && pos_x <= gradient_right_border && pos_y >= d && pos_y <= y_max)
+			{
+				gradientTf->changeCurBpKey(pos_x);
+				gradientTf->changeCurBpValue(pos_y);
+				gradientTf->updateVolumeOpacity(vrProcess->getVolumeGradientTf());
+				vrProcess->update();
+			}
+		}
+	}
+
+	//gradient tf bp gradient
+	if (watched == ui->gradienttf_curbp_gradient_label)
+	{
+		if (event->type() == QEvent::Paint)
+		{//show the gradient of checked gradient tf bp
+			gradientTf->showCurBpValue();
+		}
+		return true;
+	}
+
+	//dicom reader widget
+	if (watched == ui->dicomSlicerWidget)
+	{
+		if (event->type() == QEvent::MouseButtonRelease)
+		{
+			QPoint mp = ui->dicomSlicerWidget->mapFromGlobal(QCursor::pos());
+			cout << "mp: " << mp.x() << " " << mp.y() << endl;
+			dicomSeriesReader->getPositionGv(mp.x(), ui->dicomSlicerWidget->geometry().height() - mp.y() - 1);
+		}
+	}
+
 	return QMainWindow::eventFilter(watched, event);
 }
 
@@ -231,11 +337,10 @@ void MainWindow::onShowOpacityBpInfoAt(int idx)
 	opacityTf->showTfBpInfoAt(idx);
 }
 
-void MainWindow::onSaveAsSTL()
+void MainWindow::onShowGradientBpInfoAt(int idx)
 {
-	vrProcess->saveAsSTL();
+	gradientTf->showTfBpInfoAt(idx);
 }
-
 
 void MainWindow::onSetBgColorSlot()
 {
@@ -257,21 +362,32 @@ void MainWindow::onOpenFolderSlot()
 	QString folder_path = QFileDialog::getExistingDirectory(this, tr("Open DICOM Folder"), 
 		"C:\\Users\\13249\\Documents\\VTK_Related\\dataset", QFileDialog::ShowDirsOnly);
 
-	//build the render pipeline
 	ui->colortf_widget->setVisible(true);
 	ui->opacitytf_widget->setVisible(true);
+	//build the render pipeline
 	vrProcess->volumeRenderFlow(folder_path);
+	//show dicoms series
+	dicomSeriesReader->drawDicomSeries(folder_path);
 
 	double max_gv = vrProcess->getMaxGrayValue();
 	double min_gv = vrProcess->getMinGrayValue();
+	double max_gradient = vrProcess->getMaxGradientValue();
+	double min_gradient = vrProcess->getMinGradientValue();
 	colorTf->setMaxKey(max_gv);
 	colorTf->setMinKey(min_gv);
 	opacityTf->setMaxKey(max_gv);
 	opacityTf->setMinKey(min_gv);
+	gradientTf->setMaxKey(max_gradient);
+	gradientTf->setMinKey(min_gradient);
 
-	//set initial render style
+	//set initial render style and draw initial tf
 	colorTf->setBoneColorTf(vrProcess->getVolumeColorTf());
 	opacityTf->setBoneOpacityTf(vrProcess->getVolumeOpacityTf());
+
+	map<double, double> init_gradient_tf;
+	init_gradient_tf.insert(pair<double, double>(min_gradient, 1.0));
+	init_gradient_tf.insert(pair<double, double>(max_gradient, 1.0));
+	gradientTf->setCustomizedOpacityTf(vrProcess->getVolumeGradientTf(), init_gradient_tf);
 
 	vrProcess->update();
 }

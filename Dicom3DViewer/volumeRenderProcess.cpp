@@ -10,6 +10,7 @@ VolumeRenderProcess::VolumeRenderProcess(QVTKWidget * qvtk_widget)
 	volumeProperty = vtkSmartPointer<vtkVolumeProperty>::New();
 	volumeColor = vtkSmartPointer<vtkColorTransferFunction>::New();
 	volumeScalarOpacity = vtkSmartPointer<vtkPiecewiseFunction>::New();
+	volumeGradientOpacity = vtkSmartPointer<vtkPiecewiseFunction>::New();
 	volume = vtkSmartPointer<vtkVolume>::New();
 }
 
@@ -32,15 +33,12 @@ void VolumeRenderProcess::volumeRenderFlow(QString folder_path)
 	dicoms_reader->GetOutput()->GetDimensions(imageDims);
 	cout << "dimension[] :" << imageDims[0] << " " << imageDims[1] << " " << imageDims[2] << endl;
 
+	//gradient
+	calcGradientMagnitude();
+
 	//Mapper
 	vtkSmartPointer<vtkGPUVolumeRayCastMapper> RcGpuMapper = vtkSmartPointer<vtkGPUVolumeRayCastMapper>::New();
 	RcGpuMapper->SetInputConnection(dicoms_reader->GetOutputPort());
-
-	/*volumeScalarOpacity->RemoveAllPoints();
-	volumeScalarOpacity->AddPoint(-3024, 0, 0.5, 0.0);
-	volumeScalarOpacity->AddPoint(-16, 0, .49, .61);
-	volumeScalarOpacity->AddPoint(641, .72, .5, 0.0);
-	volumeScalarOpacity->AddPoint(3071, .71, 0.5, 0.0);*/
 
 	//vtkVolumeProperty
 	volumeProperty->RemoveAllObservers();
@@ -51,6 +49,7 @@ void VolumeRenderProcess::volumeRenderFlow(QString folder_path)
 	volumeProperty->SetSpecular(0.2);
 	volumeProperty->SetSpecularPower(10.0);
 	volumeProperty->SetColor(volumeColor);
+	volumeProperty->SetGradientOpacity(volumeGradientOpacity);
 	volumeProperty->SetScalarOpacity(volumeScalarOpacity);
 
 	//volume
@@ -62,6 +61,24 @@ void VolumeRenderProcess::volumeRenderFlow(QString folder_path)
 	volume_render->AddViewProp(volume);
 	my_vr_widget->GetRenderWindow()->AddRenderer(volume_render);
 	my_vr_widget->GetRenderWindow()->Render();
+}
+
+void VolumeRenderProcess::calcGradientMagnitude()
+{
+	// Calc gradient value
+	// Smooth the image
+	vtkSmartPointer<vtkImageGaussianSmooth> gs = vtkSmartPointer<vtkImageGaussianSmooth>::New();
+	gs->SetInputConnection(dicoms_reader->GetOutputPort());
+	gs->SetDimensionality(3);
+	gs->SetRadiusFactors(1, 1, 0);
+
+	vtkSmartPointer<vtkImageGradient> imgGradient = vtkSmartPointer<vtkImageGradient>::New();
+	imgGradient->SetInputConnection(gs->GetOutputPort());
+	imgGradient->SetDimensionality(3);
+
+	imgMagnitude = vtkSmartPointer<vtkImageMagnitude>::New();
+	imgMagnitude->SetInputConnection(imgGradient->GetOutputPort());
+	imgMagnitude->Update();
 }
 
 void VolumeRenderProcess::setBgColor(QColor color)
@@ -83,20 +100,42 @@ vtkPiecewiseFunction * VolumeRenderProcess::getVolumeOpacityTf()
 	return this->volumeScalarOpacity;
 }
 
+vtkPiecewiseFunction * VolumeRenderProcess::getVolumeGradientTf()
+{
+	return this->volumeGradientOpacity;
+}
+
+vtkDICOMImageReader * VolumeRenderProcess::getDicomReader()
+{
+	return dicoms_reader;
+}
+
 double VolumeRenderProcess::getMinGrayValue()
 {
-	vtkSmartPointer<vtkImageAccumulate> histogram = vtkSmartPointer<vtkImageAccumulate>::New();
-	histogram->SetInputData(dicoms_reader->GetOutput());
-	histogram->Update();
-	return *(histogram->GetMin());
+	double range[2];
+	dicoms_reader->GetOutput()->GetScalarRange(range);
+	return range[0];
 }
 
 double VolumeRenderProcess::getMaxGrayValue()
 {
-	vtkSmartPointer<vtkImageAccumulate> histogram = vtkSmartPointer<vtkImageAccumulate>::New();
-	histogram->SetInputData(dicoms_reader->GetOutput());
-	histogram->Update();
-	return *(histogram->GetMax());
+	double range[2];
+	dicoms_reader->GetOutput()->GetScalarRange(range);
+	return range[1];
+}
+
+double VolumeRenderProcess::getMinGradientValue()
+{
+	double range[2];
+	imgMagnitude->GetOutput()->GetScalarRange(range);
+	return range[0];
+}
+
+double VolumeRenderProcess::getMaxGradientValue()
+{
+	double range[2];
+	imgMagnitude->GetOutput()->GetScalarRange(range);
+	return range[1];
 }
 
 void VolumeRenderProcess::setVRMapper(const char * str_mapper)
