@@ -2,11 +2,15 @@
 
 vtkStandardNewMacro(myVtkInteractorStyleImage);
 
-DicomSeriesReader::DicomSeriesReader(QVTKWidget *widget)
+DicomSeriesReader::DicomSeriesReader(QFrame *widget)
 {
 	img_viewer = vtkSmartPointer<vtkImageViewer2>::New();
 	dicoms_reader = vtkSmartPointer<vtkDICOMImageReader>::New();
-	dicom_reader_widget = widget;
+
+	dicom_reader_widget = widget->findChild<QVTKWidget* >("dicomSlicerWidget");
+	dicom_coords_label = widget->findChild<QLabel* >("dicom_coords_label");
+	dicom_gray_label = widget->findChild<QLabel* >("dicom_gray_label");
+	dicom_gradient_label = widget->findChild<QLabel* >("dicom_gradient_label");
 }
 
 DicomSeriesReader::~DicomSeriesReader()
@@ -47,6 +51,9 @@ void DicomSeriesReader::drawDicomSeries(QString folder_path)
 
 double DicomSeriesReader::getPositionGv(int x, int y)
 {
+	//show coords
+	dicom_coords_label->setText("X=" + QString::number(x) + " Y=" + QString::number(y) + " Z=" + QString::number(img_viewer->GetSlice()));
+
 	vtkSmartPointer<vtkImageData> image = img_viewer->GetInput();
 	vtkSmartPointer<vtkWorldPointPicker> picker = vtkSmartPointer<vtkWorldPointPicker>::New();
 	vtkSmartPointer<vtkPointData> pointData = vtkSmartPointer<vtkPointData>::New();
@@ -82,10 +89,17 @@ double DicomSeriesReader::getPositionGv(int x, int y)
 		pointData->InterpolatePoint(pd, 0, cell->PointIds, weights);
 		int components = pointData->GetScalars()->GetNumberOfComponents();
 		double* tuple = pointData->GetScalars()->GetTuple(0);
-		for (int i = 0; i < components; i++)
+		if (components == 1)
+			dicom_gray_label->setText(QString::number(tuple[0], 10, 2));
+		else
+			dicom_gray_label->setText("None");
+		/*for (int i = 0; i < components; i++)
 		{
 			cout << tuple[i] << endl;
-		}
+		}*/
 	}
+	else
+		dicom_gray_label->setText("None");
+
 	return 0.0;
 }

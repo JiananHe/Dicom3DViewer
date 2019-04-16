@@ -16,7 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	colorTf = new ColorTransferFunction(ui->colortf_widget);
 	opacityTf = new OpacityTransferFunctioin(ui->opacitytf_widget, "opacity");
 	gradientTf = new OpacityTransferFunctioin(ui->gradienttf_widget, "gradient");
-	dicomSeriesReader = new DicomSeriesReader(ui->dicomSlicerWidget);
+	dicomSeriesReader = new DicomSeriesReader(ui->dicom_frame);
 
 	//color tf widget events
 	ui->colortf_bar->installEventFilter(this);

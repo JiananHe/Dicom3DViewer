@@ -8,11 +8,14 @@
 #include <vtkDICOMImageReader.h>
 #include <vtkImageViewer2.h>
 #include <vtkImageActor.h>  
-#include <QVTKWidget.h>
 #include <vtkImageData.h>
 #include <vtkPointData.h>
 #include <vtkCell.h>
 #include <vtkDataArray.h>
+
+#include <QVTKWidget.h>
+#include <qframe.h>
+#include <qlabel.h>
 #include "mySeriesInteractorStyle.h"
 
 class vtkEventQtSlotConnect;
@@ -21,7 +24,7 @@ class vtkRenderer;
 class DicomSeriesReader
 {
 public:
-	explicit DicomSeriesReader(QVTKWidget *);
+	explicit DicomSeriesReader(QFrame *);
 	~DicomSeriesReader();
 	
 	void drawDicomSeries(QString folder_path);
@@ -29,6 +32,10 @@ public:
 private:
 	vtkSmartPointer<vtkImageViewer2> img_viewer;
 	vtkSmartPointer<vtkDICOMImageReader> dicoms_reader;
+
+	QLabel * dicom_coords_label;
+	QLabel * dicom_gray_label;
+	QLabel * dicom_gradient_label;
 	QVTKWidget * dicom_reader_widget;
 
 };

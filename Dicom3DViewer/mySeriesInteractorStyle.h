@@ -22,16 +22,6 @@
 #include <vtkWorldPointPicker.h>
 
 
-// helper class to format slice status message
-class StatusMessage {
-public:
-	static std::string Format(int slice, int maxSlice) {
-		std::stringstream tmp;
-		tmp << "Slice Number  " << slice + 1 << "/" << maxSlice + 1;
-		return tmp.str();
-	}
-};
-
 // Define own interaction style
 class myVtkInteractorStyleImage : public vtkInteractorStyleImage
 {
@@ -68,8 +58,6 @@ protected:
 		if (_Slice < _MaxSlice) {
 			_Slice += 1;
 			_ImageViewer->SetSlice(_Slice);
-			//std::string msg = StatusMessage::Format(_Slice, _MaxSlice);
-			//_StatusMapper->SetInput(msg.c_str());
 			_ImageViewer->Render();
 		}
 	}
@@ -78,8 +66,6 @@ protected:
 		if (_Slice > _MinSlice) {
 			_Slice -= 1;
 			_ImageViewer->SetSlice(_Slice);
-			//std::string msg = StatusMessage::Format(_Slice, _MaxSlice);
-			//_StatusMapper->SetInput(msg.c_str());
 			_ImageViewer->Render();
 		}
 	}
