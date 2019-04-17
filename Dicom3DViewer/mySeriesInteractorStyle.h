@@ -18,6 +18,7 @@
 #include <vtkTextProperty.h>
 #include <vtkTextMapper.h>
 #include <sstream>
+#include <qslider.h>
 
 #include <vtkWorldPointPicker.h>
 
@@ -33,6 +34,8 @@ protected:
 	vtkImageViewer2* _ImageViewer;
 	vtkTextMapper* _StatusMapper;
 	vtkRenderWindowInteractor* interactor;
+	QSlider* _mySliderSlices;
+	QLabel* _myCurSliceLabel;
 	int _Slice;
 	int _MinSlice;
 	int _MaxSlice;
@@ -52,11 +55,28 @@ public:
 		_StatusMapper = statusMapper;
 	}
 
+	void SetSliderSlices(QSlider* sliderSlices, QLabel *label_min_slice, QLabel *label_max_slice, QLabel * label_cur_slice)
+	{
+		//set slider value
+		_mySliderSlices = sliderSlices;
+		_myCurSliceLabel = label_cur_slice;
+		_mySliderSlices->setMaximum(_MaxSlice);
+		_mySliderSlices->setMinimum(_MinSlice);
+
+		//set label value
+		label_min_slice->setText(QString::number(_MinSlice, 10));
+		label_max_slice->setText(QString::number(_MaxSlice, 10));
+		label_cur_slice->setText(QString::number(_MinSlice, 10));
+	}
 
 protected:
 	void MoveSliceForward() {
 		if (_Slice < _MaxSlice) {
 			_Slice += 1;
+
+			_myCurSliceLabel->setText(QString::number(_Slice, 10));
+			_mySliderSlices->setValue(_Slice);
+
 			_ImageViewer->SetSlice(_Slice);
 			_ImageViewer->Render();
 		}
@@ -65,16 +85,15 @@ protected:
 	void MoveSliceBackward() {
 		if (_Slice > _MinSlice) {
 			_Slice -= 1;
+
+			_myCurSliceLabel->setText(QString::number(_Slice, 10));
+			_mySliderSlices->setValue(_Slice);
+
 			_ImageViewer->SetSlice(_Slice);
 			_ImageViewer->Render();
 		}
 	}
 
-	/*virtual void OnLeftButtonUp()
-	{
-		cout << "interactor: " << interactor->GetEventPosition()[0] << " " << interactor->GetEventPosition()[1] << endl;
-	}
-*/
 	virtual void OnKeyDown() 
 	{
 		std::string key = this->GetInteractor()->GetKeySym();

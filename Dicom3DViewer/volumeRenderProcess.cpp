@@ -33,9 +33,6 @@ void VolumeRenderProcess::volumeRenderFlow(QString folder_path)
 	dicoms_reader->GetOutput()->GetDimensions(imageDims);
 	cout << "dimension[] :" << imageDims[0] << " " << imageDims[1] << " " << imageDims[2] << endl;
 
-	//gradient
-	calcGradientMagnitude();
-
 	//Mapper
 	vtkSmartPointer<vtkGPUVolumeRayCastMapper> RcGpuMapper = vtkSmartPointer<vtkGPUVolumeRayCastMapper>::New();
 	RcGpuMapper->SetInputConnection(dicoms_reader->GetOutputPort());
@@ -61,24 +58,6 @@ void VolumeRenderProcess::volumeRenderFlow(QString folder_path)
 	volume_render->AddViewProp(volume);
 	my_vr_widget->GetRenderWindow()->AddRenderer(volume_render);
 	my_vr_widget->GetRenderWindow()->Render();
-}
-
-void VolumeRenderProcess::calcGradientMagnitude()
-{
-	// Calc gradient value
-	// Smooth the image
-	vtkSmartPointer<vtkImageGaussianSmooth> gs = vtkSmartPointer<vtkImageGaussianSmooth>::New();
-	gs->SetInputConnection(dicoms_reader->GetOutputPort());
-	gs->SetDimensionality(3);
-	gs->SetRadiusFactors(1, 1, 0);
-
-	vtkSmartPointer<vtkImageGradient> imgGradient = vtkSmartPointer<vtkImageGradient>::New();
-	imgGradient->SetInputConnection(gs->GetOutputPort());
-	imgGradient->SetDimensionality(3);
-
-	imgMagnitude = vtkSmartPointer<vtkImageMagnitude>::New();
-	imgMagnitude->SetInputConnection(imgGradient->GetOutputPort());
-	imgMagnitude->Update();
 }
 
 void VolumeRenderProcess::setBgColor(QColor color)
@@ -121,20 +100,6 @@ double VolumeRenderProcess::getMaxGrayValue()
 {
 	double range[2];
 	dicoms_reader->GetOutput()->GetScalarRange(range);
-	return range[1];
-}
-
-double VolumeRenderProcess::getMinGradientValue()
-{
-	double range[2];
-	imgMagnitude->GetOutput()->GetScalarRange(range);
-	return range[0];
-}
-
-double VolumeRenderProcess::getMaxGradientValue()
-{
-	double range[2];
-	imgMagnitude->GetOutput()->GetScalarRange(range);
 	return range[1];
 }
 

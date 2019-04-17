@@ -50,6 +50,8 @@ private slots:
 	void onShowOpacityBpInfoAt(int);
 	void onShowGradientBpInfoAt(int);
 
+	void onSlideMoveSlot(int);
+
 };
 
 #endif // MAINWINDOW_H

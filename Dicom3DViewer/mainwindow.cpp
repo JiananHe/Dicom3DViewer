@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	setWindowState(Qt::WindowMaximized);
 	ui->colortf_widget->setVisible(false);
 	ui->opacitytf_widget->setVisible(false);
+	ui->gradienttf_widget->setVisible(false);
 
 	vrProcess = new VolumeRenderProcess(ui->volumeRenderWidget);
 	colorTf = new ColorTransferFunction(ui->colortf_widget);
@@ -35,6 +36,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	
 	//dicom series reader
 	ui->dicomSlicerWidget->installEventFilter(this);
+	//dicom slider
+	connect(ui->dicom_series_slider, SIGNAL(valueChanged(int)), this, SLOT(onSlideMoveSlot(int)));
 
 	//*******************menu****************
 	connect(ui->actionOpenFolder, SIGNAL(triggered()), this, SLOT(onOpenFolderSlot()));
@@ -47,7 +50,6 @@ MainWindow::MainWindow(QWidget *parent) :
 	//set mapper
 	connect(ui->actionRayCastMapper, SIGNAL(triggered()), this, SLOT(onSetRayCastMapper()));
 	connect(ui->actionSmartMapper, SIGNAL(triggered()), this, SLOT(onSetSmartMapper()));
-
 }
 
 MainWindow::~MainWindow()
@@ -319,8 +321,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 		if (event->type() == QEvent::MouseButtonRelease)
 		{
 			QPoint mp = ui->dicomSlicerWidget->mapFromGlobal(QCursor::pos());
-			cout << "mp: " << mp.x() << " " << mp.y() << endl;
-			dicomSeriesReader->getPositionGv(mp.x(), ui->dicomSlicerWidget->geometry().height() - mp.y() - 1);
+			dicomSeriesReader->getPositionGvAndGd(mp.x(), ui->dicomSlicerWidget->geometry().height() - mp.y() - 1);
 		}
 	}
 
@@ -340,6 +341,11 @@ void MainWindow::onShowOpacityBpInfoAt(int idx)
 void MainWindow::onShowGradientBpInfoAt(int idx)
 {
 	gradientTf->showTfBpInfoAt(idx);
+}
+
+void MainWindow::onSlideMoveSlot(int pos)
+{
+	dicomSeriesReader->slideMove(pos);
 }
 
 void MainWindow::onSetBgColorSlot()
@@ -362,34 +368,44 @@ void MainWindow::onOpenFolderSlot()
 	QString folder_path = QFileDialog::getExistingDirectory(this, tr("Open DICOM Folder"), 
 		"C:\\Users\\13249\\Documents\\VTK_Related\\dataset", QFileDialog::ShowDirsOnly);
 
+	//********************************************volume render********************************************
 	ui->colortf_widget->setVisible(true);
 	ui->opacitytf_widget->setVisible(true);
+
 	//build the render pipeline
 	vrProcess->volumeRenderFlow(folder_path);
-	//show dicoms series
-	dicomSeriesReader->drawDicomSeries(folder_path);
 
 	double max_gv = vrProcess->getMaxGrayValue();
 	double min_gv = vrProcess->getMinGrayValue();
-	double max_gradient = vrProcess->getMaxGradientValue();
-	double min_gradient = vrProcess->getMinGradientValue();
+
 	colorTf->setMaxKey(max_gv);
 	colorTf->setMinKey(min_gv);
 	opacityTf->setMaxKey(max_gv);
 	opacityTf->setMinKey(min_gv);
-	gradientTf->setMaxKey(max_gradient);
-	gradientTf->setMinKey(min_gradient);
 
 	//set initial render style and draw initial tf
 	colorTf->setBoneColorTf(vrProcess->getVolumeColorTf());
 	opacityTf->setBoneOpacityTf(vrProcess->getVolumeOpacityTf());
+	vrProcess->update();
+
+	//********************************************show dicoms series********************************************
+	ui->gradienttf_widget->setVisible(true);
+	dicomSeriesReader->drawDicomSeries(folder_path);
+
+	double max_gradient = dicomSeriesReader->getMaxGradientValue();
+	double min_gradient = dicomSeriesReader->getMinGradientValue();
+
+	gradientTf->setMaxKey(max_gradient);
+	gradientTf->setMinKey(min_gradient);
 
 	map<double, double> init_gradient_tf;
 	init_gradient_tf.insert(pair<double, double>(min_gradient, 1.0));
 	init_gradient_tf.insert(pair<double, double>(max_gradient, 1.0));
-	gradientTf->setCustomizedOpacityTf(vrProcess->getVolumeGradientTf(), init_gradient_tf);
-
+	gradientTf->setCustomizedOpacityTf(vrProcess->getVolumeGradientTf(), init_gradient_tf); 
 	vrProcess->update();
+
+	//********************************************show edge********************************************
+	dicomSeriesReader->cannyEdgeExtraction();
 }
 
 void MainWindow::onSetBoneStyle()

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1920</width>
-    <height>1000</height>
+    <height>999</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <widget class="QVTKWidget" name="volumeRenderWidget">
     <property name="geometry">
      <rect>
-      <x>480</x>
+      <x>490</x>
       <y>10</y>
       <width>791</width>
       <height>791</height>
@@ -378,10 +378,10 @@
    <widget class="QFrame" name="frame">
     <property name="geometry">
      <rect>
-      <x>480</x>
-      <y>800</y>
+      <x>670</x>
+      <y>810</y>
       <width>801</width>
-      <height>131</height>
+      <height>121</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -680,8 +680,8 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>451</width>
-      <height>841</height>
+      <width>471</width>
+      <height>931</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -693,9 +693,9 @@
     <widget class="QLabel" name="label_5">
      <property name="geometry">
       <rect>
-       <x>180</x>
+       <x>200</x>
        <y>10</y>
-       <width>61</width>
+       <width>51</width>
        <height>16</height>
       </rect>
      </property>
@@ -707,7 +707,7 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>486</y>
+       <y>470</y>
        <width>431</width>
        <height>431</height>
       </rect>
@@ -718,7 +718,7 @@
       <rect>
        <x>51</x>
        <y>10</y>
-       <width>121</width>
+       <width>141</width>
        <height>16</height>
       </rect>
      </property>
@@ -752,10 +752,10 @@
     <widget class="QLabel" name="slice_max_label">
      <property name="geometry">
       <rect>
-       <x>0</x>
-       <y>460</y>
+       <x>435</x>
+       <y>50</y>
        <width>31</width>
-       <height>21</height>
+       <height>16</height>
       </rect>
      </property>
      <property name="text">
@@ -778,19 +778,6 @@
       <string>梯度：</string>
      </property>
     </widget>
-    <widget class="QSlider" name="dicom_series_horizontalSlider">
-     <property name="geometry">
-      <rect>
-       <x>30</x>
-       <y>464</y>
-       <width>371</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
     <widget class="QLabel" name="dicom_gradient_label">
      <property name="geometry">
       <rect>
@@ -807,10 +794,10 @@
     <widget class="QLabel" name="slice_min_label">
      <property name="geometry">
       <rect>
-       <x>410</x>
-       <y>465</y>
-       <width>41</width>
-       <height>20</height>
+       <x>435</x>
+       <y>310</y>
+       <width>31</width>
+       <height>16</height>
       </rect>
      </property>
      <property name="text">
@@ -831,6 +818,35 @@
      </property>
      <property name="text">
       <string>坐标：</string>
+     </property>
+    </widget>
+    <widget class="QSlider" name="dicom_series_slider">
+     <property name="geometry">
+      <rect>
+       <x>440</x>
+       <y>70</y>
+       <width>21</width>
+       <height>231</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="slice_cur_label">
+     <property name="geometry">
+      <rect>
+       <x>435</x>
+       <y>453</y>
+       <width>31</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </widget>
