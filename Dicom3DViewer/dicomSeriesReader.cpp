@@ -95,34 +95,102 @@ void DicomSeriesReader::cannyEdgeExtraction()
 	nonMax->SetDimensionality(3);
 	nonMax->Update();
 
-	//show range
-	double range[2];
-	nonMax->GetOutput()->GetScalarRange(range);
-	cout << "nonmax range: " << range[0] << " " << range[1] << endl;
-	
-	//get imagedata attribute
-	int extent[6];
-	double spacing[3];
-	double origin[3];
-	nonMax->GetOutput()->GetOrigin(origin);
-	nonMax->GetOutput()->GetExtent(extent);
-	nonMax->GetOutput()->GetSpacing(spacing);
-	
-	edge_viewer->SetInputConnection(nonMax->GetOutputPort());
-	dicom_edge_widget->SetRenderWindow(edge_viewer->GetRenderWindow());
-	edge_viewer->SetupInteractor(dicom_edge_widget->GetInteractor());
+	vtkSmartPointer<vtkImageData> imageData = vtkSmartPointer<vtkImageData>::New();
+	imageData = nonMax->GetOutput();
 
+	int* dims = imageData->GetDimensions();
+	cout << "Image data dims: " << " x: " << dims[0] << " y: " << dims[1] << " z: " << dims[2] << endl;
+	cout << "Number of points: " << imageData->GetNumberOfPoints() << endl;
+	cout << "Number of cells: " << imageData->GetNumberOfCells() << endl;
 
-	vtkSmartPointer<myVtkInteractorStyleImage> myInteractorStyle1 = vtkSmartPointer<myVtkInteractorStyleImage>::New();
-	myInteractorStyle1->SetImageViewer(edge_viewer);
-	myInteractorStyle1->SetSliderSlices(dicom_series_slider, slice_min_label, slice_max_label, slice_cur_label);
-	dicom_edge_widget->GetInteractor()->SetInteractorStyle(myInteractorStyle1);
-	dicom_edge_widget->GetInteractor()->Initialize();
+	vtkSmartPointer<vtkImageCast> ic = vtkSmartPointer<vtkImageCast>::New();
+	ic->SetOutputScalarTypeToFloat();
+	ic->SetInputData(imageData);
+	ic->Update();
 
-	edge_viewer->SetSlice(10);
-	edge_viewer->GetRenderer()->ResetCamera();
-	edge_viewer->Render();
+	cout << "Number of components: " << ic->GetOutput()->GetNumberOfScalarComponents() << endl;
+
+	vtkSmartPointer<vtkThresholdPoints> min_thresh = vtkSmartPointer<vtkThresholdPoints>::New();
+	min_thresh->ThresholdByUpper(100);
+	min_thresh->SetInputData(ic->GetOutput());
+	min_thresh->Update();
+
+	cout << min_thresh->GetOutput()->GetNumberOfPoints() << endl;
+	cout << min_thresh->GetOutput()->GetNumberOfCells() << endl;
+
+	//show edge
+	vtkSmartPointer<vtkPolyData> pointsPolydata = vtkSmartPointer<vtkPolyData>::New();
+	pointsPolydata = min_thresh->GetOutput();
+
+	vtkSmartPointer<vtkVertexGlyphFilter> vertexFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+	vertexFilter->SetInputData(pointsPolydata);
+	vertexFilter->Update();
+
+	vtkSmartPointer<vtkPolyData> polydata = vtkSmartPointer<vtkPolyData>::New();
+	polydata->ShallowCopy(vertexFilter->GetOutput());
+	// Setup colors
+	vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+	colors->SetNumberOfComponents(1);
+	colors->SetName("Colors");
+
+	double pixel_range[2];
+	ic->GetOutput()->GetScalarRange(pixel_range);
+	double gap = pixel_range[1] - pixel_range[0];
+
+	int dimension[3];
+	ic->GetOutput()->GetDimensions(dimension);
+
+	double poly_bounds[6];
+	polydata->GetBounds(poly_bounds);
+	double spacing_x = (poly_bounds[1] - poly_bounds[0]) / (dimension[0] - 1);
+	double spacing_y = (poly_bounds[3] - poly_bounds[2]) / (dimension[1] - 1);
+	double spacing_z = (poly_bounds[5] - poly_bounds[4]) / (dimension[2] - 1);
+
+	for (int i = 0; i < polydata->GetNumberOfPoints(); i++)
+	{
+		double coords[3];
+		polydata->GetPoint(i, coords);
+		float * pixel = (float *)ic->GetOutput()->GetScalarPointer(
+			(coords[0] - poly_bounds[0]) / spacing_x, (coords[1] - poly_bounds[2]) / spacing_y, (coords[2] - poly_bounds[4]) / spacing_z);
+		colors->InsertNextTuple1((*pixel - pixel_range[0]) * 255.0 / gap);
+	}
+
+	polydata->GetPointData()->SetScalars(colors);
+
+	vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+	mapper->SetInputData(polydata);
+
+	vtkSmartPointer<vtkActor>  actor = vtkSmartPointer<vtkActor>::New();
+	actor->SetMapper(mapper);
+
+	vtkSmartPointer<vtkRenderer> render = vtkSmartPointer<vtkRenderer>::New();
+	render->AddActor(actor);
+	render->SetBackground(.0, .0, .0);
+
+	dicom_edge_widget->GetRenderWindow()->AddRenderer(render);
+	render->ResetCamera();
+	render->Render();
 	dicom_edge_widget->GetInteractor()->Start();
+
+
+	//traverseImageData(nonMax->GetOutput());
+	
+	////show edge
+	//edge_viewer->SetInputConnection(nonMax->GetOutputPort());
+	//dicom_edge_widget->SetRenderWindow(edge_viewer->GetRenderWindow());
+	//edge_viewer->SetupInteractor(dicom_edge_widget->GetInteractor());
+
+
+	//vtkSmartPointer<myVtkInteractorStyleImage> myInteractorStyle1 = vtkSmartPointer<myVtkInteractorStyleImage>::New();
+	//myInteractorStyle1->SetImageViewer(edge_viewer);
+	//myInteractorStyle1->SetSliderSlices(dicom_series_slider, slice_min_label, slice_max_label, slice_cur_label);
+	//dicom_edge_widget->GetInteractor()->SetInteractorStyle(myInteractorStyle1);
+	//dicom_edge_widget->GetInteractor()->Initialize();
+
+	//edge_viewer->SetSlice(0);
+	//edge_viewer->GetRenderer()->ResetCamera();
+	//edge_viewer->Render();
+	//dicom_edge_widget->GetInteractor()->Start();
 
 
 	/*edge_viewer->GetRenderer()->ResetCamera();
@@ -176,6 +244,47 @@ void DicomSeriesReader::cannyEdgeExtraction()
 	//dicom_edge_widget->GetRenderWindow()->AddRenderer(renderer);
 	//dicom_edge_widget->GetRenderWindow()->Render();
 	//dicom_edge_widget->GetInteractor()->Start();
+}
+
+void DicomSeriesReader::traverseImageData(vtkImageData * imageData)
+{
+	
+
+
+	//int count = 0;
+	//int zero_count = 0;
+	//for (int z = 0; z < dims[2]; z++)
+	//{
+	//	for (int y = 0; y < dims[1]; y++)
+	//	{
+	//		for (int x = 0; x < dims[0]; x++)
+	//		{
+	//			float * pixel = (float *)ic->GetOutput()->GetScalarPointer(x, y, z);
+	//			if (*pixel >= 2)//2051284
+	//				++zero_count;
+	//			++count;
+	//		}
+	//	}
+	//}
+	//cout << "Zero Counts: " << zero_count << endl;
+	//cout << "Counts: " << count << endl;
+
+	/*int extent[6];
+	ic->GetOutput()->GetExtent(extent);
+	int count = 0;
+	int zero_count = 0;
+	vtkImageIterator<float> it(ic->GetOutput(), extent);
+	while (!it.IsAtEnd())
+	{
+		++count;
+		it.NextSpan();
+		float * inS = it.BeginSpan();
+		float * inSEnd = it.EndSpan();
+		if (*inS == 0)
+			++zero_count;
+	}
+	cout << "Zero Counts: " << zero_count << endl;
+	cout << "Counts: " << count << endl;*/
 }
 
 void DicomSeriesReader::slideMove(int pos)

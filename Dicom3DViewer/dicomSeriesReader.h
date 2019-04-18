@@ -27,6 +27,15 @@
 #include <vtkMatrix4x4.h>
 #include <vtkLookupTable.h>
 #include <vtkImageMapToColors.h>
+#include <vtkImageIterator.h>
+#include <vtkType.h>
+#include <vtkImageCast.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkCellData.h>
+#include <vtkThresholdPoints.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkVertexGlyphFilter.h>
+#include <vtkPointSet.h>
 
 #include <QVTKWidget.h>
 #include <qframe.h>
@@ -49,6 +58,8 @@ public:
 	double getMaxGradientValue();
 	double getPositionGvAndGd(int x, int y);
 	void cannyEdgeExtraction();
+	void traverseImageData(vtkImageData *);
+
 	void slideMove(int);
 
 private:
