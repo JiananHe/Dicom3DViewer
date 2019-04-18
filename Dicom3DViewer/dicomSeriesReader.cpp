@@ -7,6 +7,7 @@ DicomSeriesReader::DicomSeriesReader(QFrame *widget)
 	img_viewer = vtkSmartPointer<vtkImageViewer2>::New();
 	edge_viewer = vtkSmartPointer<vtkImageViewer2>::New();
 	dicoms_reader = vtkSmartPointer<vtkDICOMImageReader>::New();
+	max_thresh_img = vtkSmartPointer<vtkImageThreshold>::New();
 
 	dicom_reader_widget = widget->findChild<QVTKWidget* >("dicomSlicerWidget");
 	dicom_edge_widget = widget->findChild<QVTKWidget* >("dicomEdgeWidget");
@@ -18,6 +19,13 @@ DicomSeriesReader::DicomSeriesReader(QFrame *widget)
 	slice_max_label = widget->findChild<QLabel* >("slice_max_label");
 	slice_min_label = widget->findChild<QLabel* >("slice_min_label");
 	slice_cur_label = widget->findChild<QLabel* >("slice_cur_label");
+
+	gradient_thresh_slider = widget->findChild<QSlider* >("gradient_thresh_slider");
+	gradient_min_label = widget->findChild<QLabel* >("gradient_min_label");
+	gradient_max_label = widget->findChild<QLabel* >("gradient_max_label");
+	gradient_cur_label = widget->findChild<QLabel* >("gradient_cur_label");
+
+	gradient_thresh = 10;
 }
 
 DicomSeriesReader::~DicomSeriesReader()
@@ -42,20 +50,26 @@ void DicomSeriesReader::calcGradientMagnitude()
 	imgMagnitude = vtkSmartPointer<vtkImageMagnitude>::New();
 	imgMagnitude->SetInputConnection(imgGradient->GetOutputPort());
 	imgMagnitude->Update();
+
+	//magnitude range
+	imgMagnitude->GetOutput()->GetScalarRange(magnitude_range);
+
+	gradient_min_label->setText(QString::number(magnitude_range[0], 10, 0));
+	gradient_max_label->setText(QString::number(magnitude_range[1], 10, 0));
+	gradient_cur_label->setText(QString::number(gradient_thresh, 10));
+	gradient_thresh_slider->setMinimum(int(magnitude_range[0] + 0.5));
+	gradient_thresh_slider->setMaximum(int(magnitude_range[1] + 0.5));
+	gradient_thresh_slider->setValue(gradient_thresh);
 }
 
 double DicomSeriesReader::getMinGradientValue()
 {
-	double range[2];
-	imgMagnitude->GetOutput()->GetScalarRange(range);
-	return range[0];
+	return magnitude_range[0];
 }
 
 double DicomSeriesReader::getMaxGradientValue()
 {
-	double range[2];
-	imgMagnitude->GetOutput()->GetScalarRange(range);
-	return range[1];
+	return magnitude_range[1];
 }
 
 void DicomSeriesReader::drawDicomSeries(QString folder_path)
@@ -103,75 +117,101 @@ void DicomSeriesReader::cannyEdgeExtraction()
 	cout << "Number of points: " << imageData->GetNumberOfPoints() << endl;
 	cout << "Number of cells: " << imageData->GetNumberOfCells() << endl;
 
+	//change scalar to float
 	vtkSmartPointer<vtkImageCast> ic = vtkSmartPointer<vtkImageCast>::New();
 	ic->SetOutputScalarTypeToFloat();
 	ic->SetInputData(imageData);
 	ic->Update();
-
 	cout << "Number of components: " << ic->GetOutput()->GetNumberOfScalarComponents() << endl;
 
-	vtkSmartPointer<vtkThresholdPoints> min_thresh = vtkSmartPointer<vtkThresholdPoints>::New();
-	min_thresh->ThresholdByUpper(100);
-	min_thresh->SetInputData(ic->GetOutput());
-	min_thresh->Update();
+	//set max magnitude thresh with vtkImageThreshold
+	max_thresh_img->ThresholdByUpper(gradient_thresh);
+	max_thresh_img->SetOutValue(0);
+	max_thresh_img->ReplaceOutOn();
+	max_thresh_img->ReplaceInOff();
+	max_thresh_img->SetInputData(ic->GetOutput());
+	max_thresh_img->Update();
 
-	cout << min_thresh->GetOutput()->GetNumberOfPoints() << endl;
-	cout << min_thresh->GetOutput()->GetNumberOfCells() << endl;
+	//show magnitude(edge) after thresh
+	edge_viewer->SetInputConnection(max_thresh_img->GetOutputPort());
+	dicom_edge_widget->SetRenderWindow(edge_viewer->GetRenderWindow());
+	edge_viewer->SetupInteractor(dicom_edge_widget->GetInteractor());
 
-	//show edge
-	vtkSmartPointer<vtkPolyData> pointsPolydata = vtkSmartPointer<vtkPolyData>::New();
-	pointsPolydata = min_thresh->GetOutput();
+	vtkSmartPointer<myVtkInteractorStyleImage> myInteractorStyle1 = vtkSmartPointer<myVtkInteractorStyleImage>::New();
+	myInteractorStyle1->SetImageViewer(edge_viewer);
+	myInteractorStyle1->SetSliderSlices(dicom_series_slider, slice_min_label, slice_max_label, slice_cur_label);
+	dicom_edge_widget->GetInteractor()->SetInteractorStyle(myInteractorStyle1);
+	dicom_edge_widget->GetInteractor()->Initialize();
 
-	vtkSmartPointer<vtkVertexGlyphFilter> vertexFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
-	vertexFilter->SetInputData(pointsPolydata);
-	vertexFilter->Update();
-
-	vtkSmartPointer<vtkPolyData> polydata = vtkSmartPointer<vtkPolyData>::New();
-	polydata->ShallowCopy(vertexFilter->GetOutput());
-	// Setup colors
-	vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
-	colors->SetNumberOfComponents(1);
-	colors->SetName("Colors");
-
-	double pixel_range[2];
-	ic->GetOutput()->GetScalarRange(pixel_range);
-	double gap = pixel_range[1] - pixel_range[0];
-
-	int dimension[3];
-	ic->GetOutput()->GetDimensions(dimension);
-
-	double poly_bounds[6];
-	polydata->GetBounds(poly_bounds);
-	double spacing_x = (poly_bounds[1] - poly_bounds[0]) / (dimension[0] - 1);
-	double spacing_y = (poly_bounds[3] - poly_bounds[2]) / (dimension[1] - 1);
-	double spacing_z = (poly_bounds[5] - poly_bounds[4]) / (dimension[2] - 1);
-
-	for (int i = 0; i < polydata->GetNumberOfPoints(); i++)
-	{
-		double coords[3];
-		polydata->GetPoint(i, coords);
-		float * pixel = (float *)ic->GetOutput()->GetScalarPointer(
-			(coords[0] - poly_bounds[0]) / spacing_x, (coords[1] - poly_bounds[2]) / spacing_y, (coords[2] - poly_bounds[4]) / spacing_z);
-		colors->InsertNextTuple1((*pixel - pixel_range[0]) * 255.0 / gap);
-	}
-
-	polydata->GetPointData()->SetScalars(colors);
-
-	vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-	mapper->SetInputData(polydata);
-
-	vtkSmartPointer<vtkActor>  actor = vtkSmartPointer<vtkActor>::New();
-	actor->SetMapper(mapper);
-
-	vtkSmartPointer<vtkRenderer> render = vtkSmartPointer<vtkRenderer>::New();
-	render->AddActor(actor);
-	render->SetBackground(.0, .0, .0);
-
-	dicom_edge_widget->GetRenderWindow()->AddRenderer(render);
-	render->ResetCamera();
-	render->Render();
+	edge_viewer->SetSlice(0);
+	edge_viewer->GetRenderer()->ResetCamera();
+	edge_viewer->Render();
 	dicom_edge_widget->GetInteractor()->Start();
 
+	//set max magnitude thresh with vtkThresholdPoints
+	vtkSmartPointer<vtkThresholdPoints> max_thresh_poly = vtkSmartPointer<vtkThresholdPoints>::New();
+	max_thresh_poly->ThresholdByUpper(gradient_thresh);
+	max_thresh_poly->SetInputData(ic->GetOutput());
+	max_thresh_poly->Update();
+	cout << max_thresh_poly->GetOutput()->GetNumberOfPoints() << endl;
+
+	//show edge
+	//vtkSmartPointer<vtkPolyData> pointsPolydata = vtkSmartPointer<vtkPolyData>::New();
+	//pointsPolydata = max_thresh_poly->GetOutput();
+
+	//vtkSmartPointer<vtkVertexGlyphFilter> vertexFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+	//vertexFilter->SetInputData(pointsPolydata);
+	//vertexFilter->Update();
+
+	//vtkSmartPointer<vtkPolyData> polydata = vtkSmartPointer<vtkPolyData>::New();
+	//polydata->ShallowCopy(vertexFilter->GetOutput());
+	//// Setup colors
+	//vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+	//colors->SetNumberOfComponents(1);
+	//colors->SetName("Colors");
+
+	//double pixel_range[2];
+	//ic->GetOutput()->GetScalarRange(pixel_range);
+	//double gap = pixel_range[1] - pixel_range[0];
+
+	//int dimension[3];
+	//ic->GetOutput()->GetDimensions(dimension);
+
+	//double poly_bounds[6];
+	//polydata->GetBounds(poly_bounds);
+	//double spacing_x = (poly_bounds[1] - poly_bounds[0]) / (dimension[0] - 1);
+	//double spacing_y = (poly_bounds[3] - poly_bounds[2]) / (dimension[1] - 1);
+	//double spacing_z = (poly_bounds[5] - poly_bounds[4]) / (dimension[2] - 1);
+
+	//for (int i = 0; i < polydata->GetNumberOfPoints(); i++)
+	//{
+	//	double coords[3];
+	//	polydata->GetPoint(i, coords);
+	//	float * pixel = (float *)ic->GetOutput()->GetScalarPointer(
+	//		(coords[0] - poly_bounds[0]) / spacing_x, (coords[1] - poly_bounds[2]) / spacing_y, (coords[2] - poly_bounds[4]) / spacing_z);
+	//	colors->InsertNextTuple1((*pixel - pixel_range[0]) * 255.0 / gap);
+	//}
+
+	//polydata->GetPointData()->SetScalars(colors);
+
+	//vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+	//mapper->SetInputData(polydata);
+
+	//vtkSmartPointer<vtkActor>  actor = vtkSmartPointer<vtkActor>::New();
+	//actor->SetMapper(mapper);
+
+	//vtkSmartPointer<vtkRenderer> render = vtkSmartPointer<vtkRenderer>::New();
+	//render->AddActor(actor);
+	//render->SetBackground(.0, .0, .0);
+
+	//dicom_edge_widget->GetRenderWindow()->AddRenderer(render);
+	//render->ResetCamera();
+	//render->Render();
+	//dicom_edge_widget->GetInteractor()->Start();
+
+
+
+	//**********************************************************************************************
 
 	//traverseImageData(nonMax->GetOutput());
 	
@@ -287,7 +327,7 @@ void DicomSeriesReader::traverseImageData(vtkImageData * imageData)
 	cout << "Counts: " << count << endl;*/
 }
 
-void DicomSeriesReader::slideMove(int pos)
+void DicomSeriesReader::dicomSeriseSlideMove(int pos)
 {
 	img_viewer->SetSlice(pos);
 	img_viewer->Render();
@@ -296,6 +336,19 @@ void DicomSeriesReader::slideMove(int pos)
 	edge_viewer->Render();
 
 	slice_cur_label->setText(QString::number(pos, 10));
+}
+
+void DicomSeriesReader::gradientThreshSlideMove(int pos)
+{
+	gradient_thresh = pos;
+	max_thresh_img->ThresholdByUpper(gradient_thresh);
+	max_thresh_img->Update();
+
+	int cur_slice = edge_viewer->GetSlice();
+	edge_viewer->Render();
+	edge_viewer->SetSlice(cur_slice);
+
+	gradient_cur_label->setText(QString::number(pos, 10));
 }
 
 double DicomSeriesReader::getPositionGvAndGd(int x, int y)

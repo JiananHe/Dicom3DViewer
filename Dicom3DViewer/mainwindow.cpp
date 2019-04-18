@@ -37,7 +37,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	//dicom series reader
 	ui->dicomSlicerWidget->installEventFilter(this);
 	//dicom slider
-	connect(ui->dicom_series_slider, SIGNAL(valueChanged(int)), this, SLOT(onSlideMoveSlot(int)));
+	connect(ui->dicom_series_slider, SIGNAL(valueChanged(int)), this, SLOT(onDicomSeriesSlideMoveSlot(int)));
+	connect(ui->gradient_thresh_slider, SIGNAL(valueChanged(int)), this, SLOT(onGradientThreshSlideMoveSlot(int)));
 
 	//*******************menu****************
 	connect(ui->actionOpenFolder, SIGNAL(triggered()), this, SLOT(onOpenFolderSlot()));
@@ -343,9 +344,14 @@ void MainWindow::onShowGradientBpInfoAt(int idx)
 	gradientTf->showTfBpInfoAt(idx);
 }
 
-void MainWindow::onSlideMoveSlot(int pos)
+void MainWindow::onGradientThreshSlideMoveSlot(int pos)
 {
-	dicomSeriesReader->slideMove(pos);
+	dicomSeriesReader->gradientThreshSlideMove(pos);
+}
+
+void MainWindow::onDicomSeriesSlideMoveSlot(int pos)
+{
+	dicomSeriesReader->dicomSeriseSlideMove(pos);
 }
 
 void MainWindow::onSetBgColorSlot()

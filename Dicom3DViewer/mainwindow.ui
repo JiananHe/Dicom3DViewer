@@ -378,10 +378,10 @@
    <widget class="QFrame" name="frame">
     <property name="geometry">
      <rect>
-      <x>670</x>
+      <x>530</x>
       <y>810</y>
-      <width>801</width>
-      <height>121</height>
+      <width>581</width>
+      <height>111</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -408,7 +408,7 @@
       <rect>
        <x>10</x>
        <y>30</y>
-       <width>451</width>
+       <width>311</width>
        <height>71</height>
       </rect>
      </property>
@@ -444,7 +444,7 @@
        <string>灰度值：</string>
       </property>
      </widget>
-     <widget class="QTextEdit" name="textEdit">
+     <widget class="QTextEdit" name="bound_grayValue_label">
       <property name="geometry">
        <rect>
         <x>70</x>
@@ -454,7 +454,7 @@
        </rect>
       </property>
      </widget>
-     <widget class="QTextEdit" name="textEdit_2">
+     <widget class="QTextEdit" name="bound_grayRange_label">
       <property name="geometry">
        <rect>
         <x>220</x>
@@ -477,22 +477,63 @@
        <string>阈值：</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton">
+    </widget>
+    <widget class="QFrame" name="frame_3">
+     <property name="geometry">
+      <rect>
+       <x>320</x>
+       <y>30</y>
+       <width>141</width>
+       <height>71</height>
+      </rect>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <widget class="QLabel" name="label_6">
       <property name="geometry">
        <rect>
-        <x>330</x>
-        <y>35</y>
+        <x>10</x>
+        <y>10</y>
         <width>101</width>
-        <height>31</height>
+        <height>16</height>
        </rect>
       </property>
       <property name="text">
-       <string>绘制选定材质</string>
+       <string>全局梯度阈值:</string>
+      </property>
+     </widget>
+     <widget class="QTextEdit" name="bound_gradient_label">
+      <property name="geometry">
+       <rect>
+        <x>35</x>
+        <y>35</y>
+        <width>71</width>
+        <height>31</height>
+       </rect>
       </property>
      </widget>
     </widget>
+    <widget class="QPushButton" name="bound_extraction_button">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>40</y>
+       <width>93</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>边界提取</string>
+     </property>
+    </widget>
     <zorder>frame_2</zorder>
     <zorder>label_9</zorder>
+    <zorder>frame_3</zorder>
+    <zorder>bound_extraction_button</zorder>
    </widget>
    <widget class="QWidget" name="gradienttf_widget" native="true">
     <property name="geometry">
@@ -847,6 +888,71 @@
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QSlider" name="gradient_thresh_slider">
+     <property name="geometry">
+      <rect>
+       <x>25</x>
+       <y>902</y>
+       <width>331</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="gradient_min_label">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>905</y>
+       <width>25</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="gradient_max_label">
+     <property name="geometry">
+      <rect>
+       <x>360</x>
+       <y>905</y>
+       <width>41</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="gradient_cur_label">
+     <property name="geometry">
+      <rect>
+       <x>430</x>
+       <y>905</y>
+       <width>41</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_4">
+     <property name="geometry">
+      <rect>
+       <x>400</x>
+       <y>905</y>
+       <width>31</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Cur:</string>
      </property>
     </widget>
    </widget>

@@ -36,6 +36,7 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkVertexGlyphFilter.h>
 #include <vtkPointSet.h>
+#include <vtkImageThreshold.h>
 
 #include <QVTKWidget.h>
 #include <qframe.h>
@@ -60,14 +61,16 @@ public:
 	void cannyEdgeExtraction();
 	void traverseImageData(vtkImageData *);
 
-	void slideMove(int);
+	void dicomSeriseSlideMove(int);
+	void gradientThreshSlideMove(int);
 
 private:
 	vtkSmartPointer<vtkDICOMImageReader> dicoms_reader;
 	vtkSmartPointer<vtkImageViewer2> img_viewer; 
 	vtkSmartPointer<vtkImageViewer2> edge_viewer;
 	vtkSmartPointer<vtkImageGradient> imgGradient;
-	vtkSmartPointer<vtkImageMagnitude> imgMagnitude;
+	vtkSmartPointer<vtkImageMagnitude> imgMagnitude; 
+	vtkSmartPointer<vtkImageThreshold> max_thresh_img;
 
 
 	QLabel * dicom_coords_label;
@@ -81,7 +84,12 @@ private:
 	QLabel * slice_min_label;
 	QLabel * slice_cur_label;
 
-
+	double magnitude_range[2];
+	QSlider * gradient_thresh_slider;
+	QLabel * gradient_min_label;
+	QLabel * gradient_max_label;
+	QLabel * gradient_cur_label;
+	int gradient_thresh;
 };
 
 #endif // DICOM_SERIES_READER_H

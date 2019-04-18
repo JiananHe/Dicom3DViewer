@@ -50,7 +50,8 @@ private slots:
 	void onShowOpacityBpInfoAt(int);
 	void onShowGradientBpInfoAt(int);
 
-	void onSlideMoveSlot(int);
+	void onDicomSeriesSlideMoveSlot(int);
+	void onGradientThreshSlideMoveSlot(int);
 
 };
 
