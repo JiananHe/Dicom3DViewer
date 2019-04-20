@@ -375,12 +375,12 @@
      </property>
     </widget>
    </widget>
-   <widget class="QFrame" name="frame">
+   <widget class="QFrame" name="bound_extraction_frame">
     <property name="geometry">
      <rect>
       <x>530</x>
       <y>810</y>
-      <width>581</width>
+      <width>441</width>
       <height>111</height>
      </rect>
     </property>
@@ -403,124 +403,10 @@
       <string>不透明传递函数生成：</string>
      </property>
     </widget>
-    <widget class="QFrame" name="frame_2">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>30</y>
-       <width>311</width>
-       <height>71</height>
-      </rect>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::Box</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
-     <widget class="QLabel" name="label_11">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>72</width>
-        <height>15</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>材质提取：</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_10">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>45</y>
-        <width>72</width>
-        <height>15</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>灰度值：</string>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="bound_grayValue_label">
-      <property name="geometry">
-       <rect>
-        <x>70</x>
-        <y>35</y>
-        <width>71</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="bound_grayRange_label">
-      <property name="geometry">
-       <rect>
-        <x>220</x>
-        <y>35</y>
-        <width>71</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_12">
-      <property name="geometry">
-       <rect>
-        <x>160</x>
-        <y>45</y>
-        <width>41</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>阈值：</string>
-      </property>
-     </widget>
-    </widget>
-    <widget class="QFrame" name="frame_3">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>30</y>
-       <width>141</width>
-       <height>71</height>
-      </rect>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::Box</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
-     <widget class="QLabel" name="label_6">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>101</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>全局梯度阈值:</string>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="bound_gradient_label">
-      <property name="geometry">
-       <rect>
-        <x>35</x>
-        <y>35</y>
-        <width>71</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-    </widget>
     <widget class="QPushButton" name="bound_extraction_button">
      <property name="geometry">
       <rect>
-       <x>470</x>
+       <x>330</x>
        <y>40</y>
        <width>93</width>
        <height>41</height>
@@ -530,10 +416,65 @@
       <string>边界提取</string>
      </property>
     </widget>
-    <zorder>frame_2</zorder>
-    <zorder>label_9</zorder>
-    <zorder>frame_3</zorder>
-    <zorder>bound_extraction_button</zorder>
+    <widget class="QTextEdit" name="bound_grayValue_label">
+     <property name="geometry">
+      <rect>
+       <x>72</x>
+       <y>70</y>
+       <width>71</width>
+       <height>31</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QTextEdit" name="bound_grayOffset_label">
+     <property name="geometry">
+      <rect>
+       <x>218</x>
+       <y>70</y>
+       <width>71</width>
+       <height>31</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_12">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>80</y>
+       <width>41</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>偏移:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_11">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>45</y>
+       <width>72</width>
+       <height>15</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>材质提取：</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_10">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>80</y>
+       <width>61</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>灰度值：</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QWidget" name="gradienttf_widget" native="true">
     <property name="geometry">

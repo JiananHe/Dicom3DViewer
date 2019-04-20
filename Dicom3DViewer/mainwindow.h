@@ -11,6 +11,7 @@
 #include "colorTransferFunction.h"
 #include "opacityTransferFunction.h"
 #include "dicomSeriesReader.h"
+#include "boundVisulizer.h"
 
 using namespace std;
 
@@ -33,7 +34,7 @@ private:
 	OpacityTransferFunctioin * opacityTf;
 	OpacityTransferFunctioin * gradientTf;
 	DicomSeriesReader * dicomSeriesReader;
-	
+	BoundVisualizer * boundVisualizer;
 
 private slots:
 	void onOpenFolderSlot();
@@ -53,6 +54,7 @@ private slots:
 	void onDicomSeriesSlideMoveSlot(int);
 	void onGradientThreshSlideMoveSlot(int);
 
+	void onBoundExtractionButton();
 };
 
 #endif // MAINWINDOW_H

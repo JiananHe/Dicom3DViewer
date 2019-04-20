@@ -8,6 +8,7 @@ DicomSeriesReader::DicomSeriesReader(QFrame *widget)
 	edge_viewer = vtkSmartPointer<vtkImageViewer2>::New();
 	dicoms_reader = vtkSmartPointer<vtkDICOMImageReader>::New();
 	max_thresh_img = vtkSmartPointer<vtkImageThreshold>::New();
+	max_thresh_poly = vtkSmartPointer<vtkThresholdPoints>::New();
 
 	dicom_reader_widget = widget->findChild<QVTKWidget* >("dicomSlicerWidget");
 	dicom_edge_widget = widget->findChild<QVTKWidget* >("dicomEdgeWidget");
@@ -25,7 +26,8 @@ DicomSeriesReader::DicomSeriesReader(QFrame *widget)
 	gradient_max_label = widget->findChild<QLabel* >("gradient_max_label");
 	gradient_cur_label = widget->findChild<QLabel* >("gradient_cur_label");
 
-	gradient_thresh = 10;
+	gradient_thresh = 1100;
+	roi_gv_offset = 100;
 }
 
 DicomSeriesReader::~DicomSeriesReader()
@@ -46,10 +48,12 @@ void DicomSeriesReader::calcGradientMagnitude()
 	imgGradient->SetInputConnection(gs->GetOutputPort());
 	imgGradient->SetDimensionality(3);
 	imgGradient->Update();
+	cout << "img Gradient components: " << imgGradient->GetOutput()->GetNumberOfScalarComponents() << endl;
 
 	imgMagnitude = vtkSmartPointer<vtkImageMagnitude>::New();
 	imgMagnitude->SetInputConnection(imgGradient->GetOutputPort());
 	imgMagnitude->Update();
+	cout << "img imgMagnitude components: " << imgMagnitude->GetOutput()->GetNumberOfScalarComponents() << endl;
 
 	//magnitude range
 	imgMagnitude->GetOutput()->GetScalarRange(magnitude_range);
@@ -118,7 +122,7 @@ void DicomSeriesReader::cannyEdgeExtraction()
 	cout << "Number of cells: " << imageData->GetNumberOfCells() << endl;
 
 	//change scalar to float
-	vtkSmartPointer<vtkImageCast> ic = vtkSmartPointer<vtkImageCast>::New();
+	ic = vtkSmartPointer<vtkImageCast>::New();
 	ic->SetOutputScalarTypeToFloat();
 	ic->SetInputData(imageData);
 	ic->Update();
@@ -131,6 +135,12 @@ void DicomSeriesReader::cannyEdgeExtraction()
 	max_thresh_img->ReplaceInOff();
 	max_thresh_img->SetInputData(ic->GetOutput());
 	max_thresh_img->Update();
+
+	//set max magnitude thresh with vtkThresholdPoints
+	max_thresh_poly->ThresholdByUpper(gradient_thresh);
+	max_thresh_poly->SetInputData(ic->GetOutput());
+	max_thresh_poly->Update();
+	cout << "Number of points in max_thresh_poly: " << max_thresh_poly->GetOutput()->GetNumberOfPoints() << endl;
 
 	//show magnitude(edge) after thresh
 	edge_viewer->SetInputConnection(max_thresh_img->GetOutputPort());
@@ -147,13 +157,6 @@ void DicomSeriesReader::cannyEdgeExtraction()
 	edge_viewer->GetRenderer()->ResetCamera();
 	edge_viewer->Render();
 	dicom_edge_widget->GetInteractor()->Start();
-
-	//set max magnitude thresh with vtkThresholdPoints
-	vtkSmartPointer<vtkThresholdPoints> max_thresh_poly = vtkSmartPointer<vtkThresholdPoints>::New();
-	max_thresh_poly->ThresholdByUpper(gradient_thresh);
-	max_thresh_poly->SetInputData(ic->GetOutput());
-	max_thresh_poly->Update();
-	cout << max_thresh_poly->GetOutput()->GetNumberOfPoints() << endl;
 
 	//show edge
 	//vtkSmartPointer<vtkPolyData> pointsPolydata = vtkSmartPointer<vtkPolyData>::New();
@@ -341,6 +344,7 @@ void DicomSeriesReader::dicomSeriseSlideMove(int pos)
 void DicomSeriesReader::gradientThreshSlideMove(int pos)
 {
 	gradient_thresh = pos;
+
 	max_thresh_img->ThresholdByUpper(gradient_thresh);
 	max_thresh_img->Update();
 
@@ -349,6 +353,31 @@ void DicomSeriesReader::gradientThreshSlideMove(int pos)
 	edge_viewer->SetSlice(cur_slice);
 
 	gradient_cur_label->setText(QString::number(pos, 10));
+}
+
+float DicomSeriesReader::getRoiGray()
+{
+	return roi_gv;
+}
+
+vtkImageData * DicomSeriesReader::getImageGradientData()
+{
+	return imgGradient->GetOutput();
+}
+
+vtkImageData * DicomSeriesReader::getImageMagnitudeData()
+{
+	return imgMagnitude->GetOutput();
+}
+
+vtkImageData * DicomSeriesReader::getImageGrayData()
+{
+	return dicoms_reader->GetOutput();
+}
+
+vtkThresholdPoints * DicomSeriesReader::getBoundMagnitudePoly()
+{
+	return max_thresh_poly;
 }
 
 double DicomSeriesReader::getPositionGvAndGd(int x, int y)
@@ -400,6 +429,7 @@ double DicomSeriesReader::getPositionGvAndGd(int x, int y)
 		pointData_gv->InterpolatePoint(pd_gv, 0, cell_gv->PointIds, weights_gv);
 		double* tuple = pointData_gv->GetScalars()->GetTuple(0);
 		dicom_gray_label->setText(QString::number(tuple[0], 10, 2));
+		roi_gv = tuple[0];
 	}
 	else
 		dicom_gray_label->setText("None");
@@ -421,3 +451,154 @@ double DicomSeriesReader::getPositionGvAndGd(int x, int y)
 	return 0.0;
 }
 
+
+void DicomSeriesReader::findROIBound()
+{
+	vtkSmartPointer<vtkImageData> imageGradientData = imgGradient->GetOutput();
+	vtkSmartPointer<vtkImageData> imageMagnitudeData = imgMagnitude->GetOutput();
+	vtkSmartPointer<vtkImageData> imageGrayData = dicoms_reader->GetOutput();
+
+	cout << "imageGradientData com: " << imageGradientData->GetNumberOfScalarComponents() << endl;
+
+	vtkSmartPointer <vtkImageCast> ic1 = vtkSmartPointer<vtkImageCast>::New();
+	ic1->SetOutputScalarTypeToFloat();
+	ic1->SetInputData(imageGradientData);
+	ic1->Update();
+	imageGradientData = ic1->GetOutput();
+
+	cout << "imageGradientData: " << *(float*)imageGradientData->GetScalarPointer(100, 100, 20) << endl;
+	cout << "imageGradientData com: " << imageGradientData->GetNumberOfScalarComponents() << endl;
+
+	vtkSmartPointer <vtkImageCast> ic2 = vtkSmartPointer<vtkImageCast>::New();
+	ic2->SetInputData(imageMagnitudeData);
+	ic2->Update();
+	imageMagnitudeData = ic2->GetOutput();
+	cout << "imageGradientData: " << *(float*)imageMagnitudeData->GetScalarPointer(100, 100, 20) << endl;
+
+	vtkSmartPointer <vtkImageCast> ic3 = vtkSmartPointer<vtkImageCast>::New();
+	ic3->SetInputData(imageGrayData);
+	ic3->Update();
+	imageGrayData = ic3->GetOutput();
+	cout << "imageGradientData: " << *(float*)imageGrayData->GetScalarPointer(100, 100, 20) << endl;
+
+
+	assert(imageGradientData->GetNumberOfScalarComponents() == 3 &&
+		imageMagnitudeData->GetNumberOfScalarComponents() == 1 &&
+		imageGrayData->GetNumberOfScalarComponents() == 1);
+
+	int dims2[3], dims3[3];
+	imageGradientData->GetDimensions(dims);
+	imageMagnitudeData->GetDimensions(dims2);
+	imageGrayData->GetDimensions(dims3);
+	assert(equal(dims, dims + 3, dims2, dims2 + 3) && equal(dims3, dims3 + 3, dims2, dims2 + 3));
+
+	//calc
+	max_thresh_poly->ThresholdByUpper(gradient_thresh);
+	max_thresh_poly->Update();
+	cout << "Number of points in max_thresh_poly: " << max_thresh_poly->GetOutput()->GetNumberOfPoints() << endl;
+
+	double poly_bounds[6];
+	max_thresh_poly->GetOutput()->GetBounds(poly_bounds);
+	double spacing_x = (poly_bounds[1] - poly_bounds[0]) / (dims[0] - 1);
+	double spacing_y = (poly_bounds[3] - poly_bounds[2]) / (dims[1] - 1);
+	double spacing_z = (poly_bounds[5] - poly_bounds[4]) / (dims[2] - 1);
+
+	float end_mag_ratio = 0.5;
+
+	for (int i = 0; i < max_thresh_poly->GetOutput()->GetNumberOfPoints(); i++)
+	{
+		//map poly coords to data coords
+		double poly_coords[3];
+		int data_coords[3];
+		max_thresh_poly->GetOutput()->GetPoint(i, poly_coords);
+		data_coords[0] = (poly_coords[0] - poly_bounds[0]) / spacing_x;
+		data_coords[1] = (poly_coords[1] - poly_bounds[2]) / spacing_y;
+		data_coords[2] = (poly_coords[2] - poly_bounds[4]) / spacing_z;
+
+		//get the gradient in three dimentions
+		float * ele_gradient = (float *)imageGradientData->GetScalarPointer(data_coords);
+		float * ele_magnitude = (float *)imageMagnitudeData->GetScalarPointer(data_coords);
+		float * ele_gray = (float *)imageGrayData->GetScalarPointer(data_coords);
+
+		float * cur_gradient = ele_gradient;
+		float * cur_magnitude = ele_magnitude;
+		float * cur_gray = ele_gray;
+
+		while (*cur_magnitude > *ele_magnitude * end_mag_ratio && isOutOfImage(data_coords))
+		{
+			if (*cur_gray <= roi_gv + roi_gv_offset && *cur_gray >= roi_gv - roi_gv_offset)//the gv of cur point in the roi range, then the ele is a roi bound point.
+			{
+				roi_bound_gd.push_back(*ele_magnitude);
+				roi_bound_gv.push_back(*ele_gray);
+				break;
+			}
+			else//find next point along the max gradient axis and orientation
+			{
+				int * axis_orient = calcMaxGradientAxisAndOrient(cur_gradient, *cur_gray);
+				int axis = axis_orient[0];
+				int orient = axis_orient[1];
+
+				data_coords[axis] = data_coords[axis] + orient;
+				float * cur_gradient = (float *)imageGradientData->GetScalarPointer(data_coords);
+				float * cur_magnitude = (float *)imageMagnitudeData->GetScalarPointer(data_coords);
+				float * cur_gray = (float *)imageGrayData->GetScalarPointer(data_coords);
+			}
+		}
+	}
+
+	cout << "roi_bound_gd size: " << roi_bound_gd.size() << endl;
+	for each (float gd in roi_bound_gd)
+	{
+		cout << gd << endl;
+	}
+	cout << "roi_bound_gv size: " << roi_bound_gv.size() << endl;
+	for each (float gv in roi_bound_gv)
+	{
+		cout << gv << endl;
+	}
+}
+
+int * DicomSeriesReader::calcMaxGradientAxisAndOrient(float * gradient, float cur_gv)
+{
+	int axis = 0;
+	int orient = 1;
+
+	if (abs(gradient[0]) >= abs(gradient[1]) && abs(gradient[0]) >= abs(gradient[2]))
+		axis = 0;
+	else if (abs(gradient[1]) >= abs(gradient[0]) && abs(gradient[1]) >= abs(gradient[2]))
+		axis = 1;
+	else
+		axis = 2;
+
+	if (gradient[axis] > 0)
+	{
+		if (cur_gv < roi_gv - roi_gv_offset)
+			orient = -1;
+		else if (cur_gv > roi_gv + roi_gv_offset)
+			orient = 1;
+	}
+	else
+	{
+		if (cur_gv < roi_gv - roi_gv_offset)
+			orient = 1;
+		else if (cur_gv > roi_gv + roi_gv_offset)
+			orient = -1;
+	}
+
+	int res[2];
+	res[0] = axis;
+	res[1] = orient;
+
+	return res;
+}
+
+bool DicomSeriesReader::isOutOfImage(int * coords)
+{
+	if (coords[0] < 0 || coords[0] >= dims[0])
+		return false;
+	if (coords[1] < 0 || coords[1] >= dims[1])
+		return false;
+	if (coords[2] < 0 || coords[2] >= dims[2])
+		return false;
+	return true;
+}

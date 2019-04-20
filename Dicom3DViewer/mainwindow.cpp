@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	opacityTf = new OpacityTransferFunctioin(ui->opacitytf_widget, "opacity");
 	gradientTf = new OpacityTransferFunctioin(ui->gradienttf_widget, "gradient");
 	dicomSeriesReader = new DicomSeriesReader(ui->dicom_frame);
+	boundVisualizer = new BoundVisualizer(ui->bound_extraction_frame);
 
 	//color tf widget events
 	ui->colortf_bar->installEventFilter(this);
@@ -51,6 +52,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	//set mapper
 	connect(ui->actionRayCastMapper, SIGNAL(triggered()), this, SLOT(onSetRayCastMapper()));
 	connect(ui->actionSmartMapper, SIGNAL(triggered()), this, SLOT(onSetSmartMapper()));
+
+	//bound extraction
+	connect(ui->bound_extraction_button, SIGNAL(released()), this, SLOT(onBoundExtractionButton()));
 }
 
 MainWindow::~MainWindow()
@@ -323,6 +327,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 		{
 			QPoint mp = ui->dicomSlicerWidget->mapFromGlobal(QCursor::pos());
 			dicomSeriesReader->getPositionGvAndGd(mp.x(), ui->dicomSlicerWidget->geometry().height() - mp.y() - 1);
+			boundVisualizer->setRoiGrayValue(dicomSeriesReader->getRoiGray());
 		}
 	}
 
@@ -347,6 +352,16 @@ void MainWindow::onShowGradientBpInfoAt(int idx)
 void MainWindow::onGradientThreshSlideMoveSlot(int pos)
 {
 	dicomSeriesReader->gradientThreshSlideMove(pos);
+}
+
+void MainWindow::onBoundExtractionButton()
+{
+	/*boundVisualizer->findROIBound(
+		dicomSeriesReader->getImageGradientData(), 
+		dicomSeriesReader->getImageMagnitudeData(), 
+		dicomSeriesReader->getImageGrayData(), 
+		dicomSeriesReader->getBoundMagnitudePoly());*/
+	dicomSeriesReader->findROIBound();
 }
 
 void MainWindow::onDicomSeriesSlideMoveSlot(int pos)
