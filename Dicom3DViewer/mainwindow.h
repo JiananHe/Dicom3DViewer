@@ -10,7 +10,9 @@
 #include "volumeRenderProcess.h"
 #include "colorTransferFunction.h"
 #include "opacityTransferFunction.h"
-#include "dicomSeriesReader.h"
+//#include "dicomSeriesReader.h"
+#include "dicomVisualizer.h"
+#include "roiVisualizer.h"
 #include "boundVisulizer.h"
 
 using namespace std;
@@ -33,8 +35,13 @@ private:
 	ColorTransferFunction * colorTf;
 	OpacityTransferFunctioin * opacityTf;
 	OpacityTransferFunctioin * gradientTf;
-	DicomSeriesReader * dicomSeriesReader;
+
+	DicomVisualizer * dicomVisualizer;
+	RoiVisualizer * roiVisualizer;
 	BoundVisualizer * boundVisualizer;
+	//DicomSeriesReader * dicomSeriesReader;
+	//BoundVisualizer * boundVisualizer;
+	
 
 private slots:
 	void onOpenFolderSlot();

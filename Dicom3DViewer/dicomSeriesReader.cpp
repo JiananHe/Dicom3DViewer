@@ -451,7 +451,24 @@ double DicomSeriesReader::getPositionGvAndGd(int x, int y)
 	return 0.0;
 }
 
+/*
+Purpose: Find the ROI related points among all the edge points
+Algorithm:
+for ele in edge_points:
+	   cur_point = ele;
+	1. axis = max(cur_point.gd[3])
+	   orient = axis * (roi.gv - ele.gv) > 0 ? -1 : 1;
+	2. next_point = get next point according to axis and orient
 
+	3. if next_point.gv in rio.range:
+		 select ele;
+	   else if next_point.gd < ele.gd/2
+		 discard ele;
+	   else:
+		 cur_point = next_point;
+		 repeat 1;
+
+*/
 void DicomSeriesReader::findROIBound()
 {
 	vtkSmartPointer<vtkImageData> imageGradientData = imgGradient->GetOutput();

@@ -19,6 +19,7 @@
 #include <vtkTextMapper.h>
 #include <sstream>
 #include <qslider.h>
+#include <qlabel.h>
 
 #include <vtkWorldPointPicker.h>
 

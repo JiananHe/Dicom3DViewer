@@ -17,8 +17,10 @@ MainWindow::MainWindow(QWidget *parent) :
 	colorTf = new ColorTransferFunction(ui->colortf_widget);
 	opacityTf = new OpacityTransferFunctioin(ui->opacitytf_widget, "opacity");
 	gradientTf = new OpacityTransferFunctioin(ui->gradienttf_widget, "gradient");
-	dicomSeriesReader = new DicomSeriesReader(ui->dicom_frame);
-	boundVisualizer = new BoundVisualizer(ui->bound_extraction_frame);
+
+	dicomVisualizer = new DicomVisualizer(ui->dicom_frame, "dicom", ui->series_slider_frame);
+	roiVisualizer = new RoiVisualizer(ui->roi_frame, "roi", ui->series_slider_frame);
+	boundVisualizer = new BoundVisualizer(ui->bound_frame, "bound", ui->series_slider_frame);
 
 	//color tf widget events
 	ui->colortf_bar->installEventFilter(this);
@@ -35,11 +37,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->gradienttf_curbp_gradient_label->installEventFilter(this);
 	connect(ui->gradienttf_verticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(onShowGradientBpInfoAt(int)));
 	
-	//dicom series reader
-	ui->dicomSlicerWidget->installEventFilter(this);
-	//dicom slider
-	connect(ui->dicom_series_slider, SIGNAL(valueChanged(int)), this, SLOT(onDicomSeriesSlideMoveSlot(int)));
-	connect(ui->gradient_thresh_slider, SIGNAL(valueChanged(int)), this, SLOT(onGradientThreshSlideMoveSlot(int)));
+	////dicom series reader
+	//ui->dicomSlicerWidget->installEventFilter(this);
+	////dicom slider
+	//connect(ui->dicom_series_slider, SIGNAL(valueChanged(int)), this, SLOT(onDicomSeriesSlideMoveSlot(int)));
+	//connect(ui->gradient_thresh_slider, SIGNAL(valueChanged(int)), this, SLOT(onGradientThreshSlideMoveSlot(int)));
 
 	//*******************menu****************
 	connect(ui->actionOpenFolder, SIGNAL(triggered()), this, SLOT(onOpenFolderSlot()));
@@ -321,7 +323,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 	}
 
 	//dicom reader widget
-	if (watched == ui->dicomSlicerWidget)
+	/*if (watched == ui->dicomSlicerWidget)
 	{
 		if (event->type() == QEvent::MouseButtonRelease)
 		{
@@ -329,7 +331,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 			dicomSeriesReader->getPositionGvAndGd(mp.x(), ui->dicomSlicerWidget->geometry().height() - mp.y() - 1);
 			boundVisualizer->setRoiGrayValue(dicomSeriesReader->getRoiGray());
 		}
-	}
+	}*/
 
 	return QMainWindow::eventFilter(watched, event);
 }
@@ -351,7 +353,7 @@ void MainWindow::onShowGradientBpInfoAt(int idx)
 
 void MainWindow::onGradientThreshSlideMoveSlot(int pos)
 {
-	dicomSeriesReader->gradientThreshSlideMove(pos);
+	//dicomSeriesReader->gradientThreshSlideMove(pos);
 }
 
 void MainWindow::onBoundExtractionButton()
@@ -361,12 +363,12 @@ void MainWindow::onBoundExtractionButton()
 		dicomSeriesReader->getImageMagnitudeData(), 
 		dicomSeriesReader->getImageGrayData(), 
 		dicomSeriesReader->getBoundMagnitudePoly());*/
-	dicomSeriesReader->findROIBound();
+	//dicomSeriesReader->findROIBound();
 }
 
 void MainWindow::onDicomSeriesSlideMoveSlot(int pos)
 {
-	dicomSeriesReader->dicomSeriseSlideMove(pos);
+	//dicomSeriesReader->dicomSeriseSlideMove(pos);
 }
 
 void MainWindow::onSetBgColorSlot()
@@ -410,9 +412,18 @@ void MainWindow::onOpenFolderSlot()
 	vrProcess->update();
 
 	//********************************************show dicoms series********************************************
-	ui->gradienttf_widget->setVisible(true);
-	dicomSeriesReader->drawDicomSeries(folder_path);
+	//dicomSeriesReader->drawDicomSeries(folder_path);
+	dicomVisualizer->setOriginData(vrProcess->getDicomReader()->GetOutput());
+	dicomVisualizer->visualizeData();
 
+	roiVisualizer->setOriginData(dicomVisualizer->getVisualData());
+	roiVisualizer->setRoiGrayRange(0, 1000);
+	roiVisualizer->visualizeData();
+
+	boundVisualizer->setOriginData(roiVisualizer->getVisualData());
+	boundVisualizer->visualizeData();
+
+	/*ui->gradienttf_widget->setVisible(true);
 	double max_gradient = dicomSeriesReader->getMaxGradientValue();
 	double min_gradient = dicomSeriesReader->getMinGradientValue();
 
@@ -422,11 +433,11 @@ void MainWindow::onOpenFolderSlot()
 	map<double, double> init_gradient_tf;
 	init_gradient_tf.insert(pair<double, double>(min_gradient, 1.0));
 	init_gradient_tf.insert(pair<double, double>(max_gradient, 1.0));
-	gradientTf->setCustomizedOpacityTf(vrProcess->getVolumeGradientTf(), init_gradient_tf); 
+	gradientTf->setCustomizedOpacityTf(vrProcess->getVolumeGradientTf(), init_gradient_tf); */
 	vrProcess->update();
 
 	//********************************************show edge********************************************
-	dicomSeriesReader->cannyEdgeExtraction();
+	//dicomSeriesReader->cannyEdgeExtraction();
 }
 
 void MainWindow::onSetBoneStyle()
