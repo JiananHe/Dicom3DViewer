@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1920</width>
-    <height>999</height>
+    <height>1003</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,7 +28,7 @@
     <property name="geometry">
      <rect>
       <x>1300</x>
-      <y>250</y>
+      <y>171</y>
       <width>601</width>
       <height>151</height>
      </rect>
@@ -209,7 +209,7 @@
     <property name="geometry">
      <rect>
       <x>1300</x>
-      <y>80</y>
+      <y>1</y>
       <width>601</width>
       <height>131</height>
      </rect>
@@ -480,7 +480,7 @@
     <property name="geometry">
      <rect>
       <x>1300</x>
-      <y>440</y>
+      <y>361</y>
       <width>601</width>
       <height>151</height>
      </rect>
@@ -690,8 +690,8 @@
       <rect>
        <x>0</x>
        <y>470</y>
-       <width>431</width>
-       <height>431</height>
+       <width>411</width>
+       <height>411</height>
       </rect>
      </property>
     </widget>
@@ -713,8 +713,8 @@
       <rect>
        <x>0</x>
        <y>30</y>
-       <width>431</width>
-       <height>431</height>
+       <width>411</width>
+       <height>411</height>
       </rect>
      </property>
     </widget>
@@ -897,6 +897,26 @@
      </property>
     </widget>
    </widget>
+   <widget class="QVTKWidget" name="dicomEdgeWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>1460</x>
+      <y>530</y>
+      <width>411</width>
+      <height>411</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="RangeSlider" name="widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>1010</x>
+      <y>820</y>
+      <width>431</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -1020,6 +1040,12 @@
    <class>QVTKWidget</class>
    <extends>QWidget</extends>
    <header>QVTKWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>RangeSlider</class>
+   <extends>QWidget</extends>
+   <header>Rangeslider.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
