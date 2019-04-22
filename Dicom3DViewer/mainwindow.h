@@ -62,6 +62,11 @@ private slots:
 	void onGradientThreshSlideMoveSlot(int);
 
 	void onBoundExtractionButton();
+	void onRoiGrayMinChangeSlot(int);
+	void onRoiGrayMaxChangeSlot(int);
+
+	void onRoiToBoundSlot();
+	void onMagThreshChangeSlot(int);
 };
 
 #endif // MAINWINDOW_H

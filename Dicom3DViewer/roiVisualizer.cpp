@@ -3,6 +3,10 @@
 RoiVisualizer::RoiVisualizer(QFrame * vtk_frame, QString name, QFrame * slider_frame) :
 	SeriesVisualizer(vtk_frame, name, slider_frame)
 {
+	roi_thresh = vtkSmartPointer<vtkImageThreshold>::New();
+	roi_range_slider = vtk_frame->findChild<RangeSlider*>("roi_range_slider");
+	roi_min_label = vtk_frame->findChild<QLabel*>("roi_min_label");
+	roi_max_label = vtk_frame->findChild<QLabel*>("roi_max_label");
 }
 
 RoiVisualizer::~RoiVisualizer()
@@ -10,11 +14,60 @@ RoiVisualizer::~RoiVisualizer()
 
 }
 
-void RoiVisualizer::setRoiGrayRange(float roi_min, float roi_max)
+void RoiVisualizer::setOriginData(vtkSmartPointer<vtkImageData> input_data)
 {
-	assert(roi_min <= roi_max);
-	this->roi_min = roi_min;
-	this->roi_max = roi_max;
+	SeriesVisualizer::setOriginData(input_data);
+
+	double init_range[2];
+	getOriginData()->GetScalarRange(init_range);
+	roi_min_label->setText(QString::number(init_range[0]));
+	roi_max_label->setText(QString::number(init_range[1]));
+	roi_range_slider->setMinimum(int(init_range[0]));
+	roi_range_slider->setMaximum(int(init_range[1]));
+
+	setRoiGrayRange(float(init_range[0]), float(init_range[1]));
+}
+
+bool RoiVisualizer::setRoiGrayRange(float rMin, float rMax)
+{
+	if (rMin == roi_min && rMax == roi_max)
+		return false;
+	else
+	{
+		this->roi_min = rMin;
+		roi_min_label->setText(QString::number(rMin));
+		this->roi_max = rMax;
+		roi_max_label->setText(QString::number(rMax)); 
+		return true;
+	}
+}
+
+void RoiVisualizer::updateVisualData()
+{
+	roi_thresh->ThresholdBetween(roi_min, roi_max);
+	roi_thresh->Update();
+
+	vtkSmartPointer<vtkImageCast> ic = vtkSmartPointer< vtkImageCast>::New();
+	ic->SetInputData(roi_thresh->GetOutput());
+	ic->SetOutputScalarTypeToFloat();
+	ic->Update();
+
+	setVisualData(ic->GetOutput());
+
+	viewer->SetInputData(getVisualData());
+	int slice = viewer->GetSlice();
+	viewer->SetSlice(slice);
+	viewer->Render();
+}
+
+float RoiVisualizer::getRoiRangeMin()
+{
+	return roi_min;
+}
+
+float RoiVisualizer::getRoiRangeMax()
+{
+	return roi_max;
 }
 
 void RoiVisualizer::transferData()
@@ -24,7 +77,6 @@ void RoiVisualizer::transferData()
 	cout << "src gray range: " << range[0] << " " << range[1] << endl;
 
 	//thresh the gray data to get roi according to the roi range
-	vtkSmartPointer<vtkImageThreshold> roi_thresh = vtkSmartPointer<vtkImageThreshold>::New();
 	roi_thresh->SetInputData(getOriginData());
 	roi_thresh->ThresholdBetween(roi_min, roi_max);
 	roi_thresh->ReplaceInOff();

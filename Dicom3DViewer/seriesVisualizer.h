@@ -11,6 +11,11 @@
 #include <vtkImageThreshold.h>
 #include <vtkImageCast.h>
 #include <vtkImageViewer2.h>
+#include <vtkImageActor.h>
+#include <vtkPicker.h>
+#include <vtkPointData.h>
+#include <vtkCell.h>
+#include <vtkDataArray.h>
 
 #include "mySeriesInteractorStyle.h"
 
@@ -22,12 +27,14 @@ public:
 
 	void setOriginData(vtkSmartPointer<vtkImageData>);
 	void visualizeData();
-	virtual void transferData() = 0;
 	void setVisualData(vtkSmartPointer<vtkImageData>);
+
+	virtual void transferData() = 0;
 
 	vtkSmartPointer<vtkImageData> getVisualData();
 	vtkSmartPointer<vtkImageData> getOriginData();
 	
+	void sliceMove(int);
 
 protected:
 	QVTKWidget * visual_widget;
@@ -40,6 +47,7 @@ protected:
 private:
 	vtkSmartPointer<vtkImageData> origin_data;
 	vtkSmartPointer<vtkImageData> visual_data;
+protected:
 	vtkSmartPointer<vtkImageViewer2> viewer;
 };
 
@@ -88,13 +96,19 @@ inline void SeriesVisualizer::visualizeData()
 
 inline vtkSmartPointer<vtkImageData> SeriesVisualizer::getVisualData()
 {
-	cout << visual_data->GetScalarTypeAsString() << endl;
 	return visual_data;
 }
 
 inline vtkSmartPointer<vtkImageData> SeriesVisualizer::getOriginData()
 {
 	return origin_data;
+}
+
+inline void SeriesVisualizer::sliceMove(int pos)
+{
+	viewer->SetSlice(pos);
+	viewer->Render();
+	slider_cur_label->setText(QString::number(pos));
 }
 
 inline void SeriesVisualizer::setVisualData(vtkSmartPointer<vtkImageData> input_data)

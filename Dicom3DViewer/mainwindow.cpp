@@ -38,10 +38,19 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(ui->gradienttf_verticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(onShowGradientBpInfoAt(int)));
 	
 	////dicom series reader
-	//ui->dicomSlicerWidget->installEventFilter(this);
-	////dicom slider
-	//connect(ui->dicom_series_slider, SIGNAL(valueChanged(int)), this, SLOT(onDicomSeriesSlideMoveSlot(int)));
+	ui->dicom_widget->installEventFilter(this);
+	//dicom slider
+	connect(ui->dicom_series_slider, SIGNAL(valueChanged(int)), this, SLOT(onDicomSeriesSlideMoveSlot(int)));
 	//connect(ui->gradient_thresh_slider, SIGNAL(valueChanged(int)), this, SLOT(onGradientThreshSlideMoveSlot(int)));
+
+	//roi gray range slider
+	connect(ui->roi_range_slider, SIGNAL(lowerValueChanged(int)), this, SLOT(onRoiGrayMinChangeSlot(int)));
+	connect(ui->roi_range_slider, SIGNAL(upperValueChanged(int)), this, SLOT(onRoiGrayMaxChangeSlot(int)));
+
+	connect(ui->bound_extraction_button, SIGNAL(released()), this, SLOT(onRoiToBoundSlot()));
+
+	//bound magnitude slider
+	connect(ui->magnitude_thresh_slider, SIGNAL(valueChanged(int)), this, SLOT(onMagThreshChangeSlot(int)));
 
 	//*******************menu****************
 	connect(ui->actionOpenFolder, SIGNAL(triggered()), this, SLOT(onOpenFolderSlot()));
@@ -56,7 +65,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(ui->actionSmartMapper, SIGNAL(triggered()), this, SLOT(onSetSmartMapper()));
 
 	//bound extraction
-	connect(ui->bound_extraction_button, SIGNAL(released()), this, SLOT(onBoundExtractionButton()));
+	//connect(ui->bound_extraction_button, SIGNAL(released()), this, SLOT(onBoundExtractionButton()));
 }
 
 MainWindow::~MainWindow()
@@ -323,15 +332,16 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 	}
 
 	//dicom reader widget
-	/*if (watched == ui->dicomSlicerWidget)
+	if (watched == ui->dicom_widget)
 	{
 		if (event->type() == QEvent::MouseButtonRelease)
 		{
-			QPoint mp = ui->dicomSlicerWidget->mapFromGlobal(QCursor::pos());
-			dicomSeriesReader->getPositionGvAndGd(mp.x(), ui->dicomSlicerWidget->geometry().height() - mp.y() - 1);
-			boundVisualizer->setRoiGrayValue(dicomSeriesReader->getRoiGray());
+			QPoint mp = ui->dicom_widget->mapFromGlobal(QCursor::pos());
+			dicomVisualizer->showPositionGray(mp.x(), ui->dicom_widget->geometry().height() - mp.y() - 1);
+			dicomVisualizer->showPositionMag(boundVisualizer->getPositionMag(mp.x(), ui->dicom_widget->geometry().height() - mp.y() - 1));
+			//boundVisualizer->setRoiGrayValue(dicomSeriesReader->getRoiGray());
 		}
-	}*/
+	}
 
 	return QMainWindow::eventFilter(watched, event);
 }
@@ -366,9 +376,38 @@ void MainWindow::onBoundExtractionButton()
 	//dicomSeriesReader->findROIBound();
 }
 
+void MainWindow::onRoiGrayMinChangeSlot(int aMin)
+{
+	if (roiVisualizer->setRoiGrayRange(aMin, roiVisualizer->getRoiRangeMax()))
+		roiVisualizer->updateVisualData();
+}
+
+void MainWindow::onRoiGrayMaxChangeSlot(int aMax)
+{
+	if (roiVisualizer->setRoiGrayRange(roiVisualizer->getRoiRangeMin(), aMax))
+		roiVisualizer->updateVisualData();
+}
+
+void MainWindow::onRoiToBoundSlot()
+{
+	boundVisualizer->setOriginData(roiVisualizer->getVisualData());
+	boundVisualizer->visualizeData();
+}
+
+void MainWindow::onMagThreshChangeSlot(int pos)
+{
+	boundVisualizer->setMagnitudeThresh(pos);
+	boundVisualizer->updateVisualData();
+	boundVisualizer->setMagSliderValue();
+}
+
+
 void MainWindow::onDicomSeriesSlideMoveSlot(int pos)
 {
 	//dicomSeriesReader->dicomSeriseSlideMove(pos);
+	dicomVisualizer->sliceMove(pos);
+	roiVisualizer->sliceMove(pos);
+	boundVisualizer->sliceMove(pos);
 }
 
 void MainWindow::onSetBgColorSlot()
@@ -417,11 +456,11 @@ void MainWindow::onOpenFolderSlot()
 	dicomVisualizer->visualizeData();
 
 	roiVisualizer->setOriginData(dicomVisualizer->getVisualData());
-	roiVisualizer->setRoiGrayRange(0, 1000);
 	roiVisualizer->visualizeData();
 
 	boundVisualizer->setOriginData(roiVisualizer->getVisualData());
 	boundVisualizer->visualizeData();
+	boundVisualizer->setMagSliderValue();
 
 	/*ui->gradienttf_widget->setVisible(true);
 	double max_gradient = dicomSeriesReader->getMaxGradientValue();
