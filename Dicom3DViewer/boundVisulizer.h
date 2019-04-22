@@ -17,6 +17,7 @@ public:
 
 	void setMagnitudeThresh(float);
 	QString getPositionMag(int x, int y);
+	void visualizeData();
 	void updateVisualData();
 private:
 	float mag_threshold;

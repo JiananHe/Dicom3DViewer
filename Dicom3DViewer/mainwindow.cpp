@@ -398,7 +398,6 @@ void MainWindow::onMagThreshChangeSlot(int pos)
 {
 	boundVisualizer->setMagnitudeThresh(pos);
 	boundVisualizer->updateVisualData();
-	boundVisualizer->setMagSliderValue();
 }
 
 
@@ -460,7 +459,7 @@ void MainWindow::onOpenFolderSlot()
 
 	boundVisualizer->setOriginData(roiVisualizer->getVisualData());
 	boundVisualizer->visualizeData();
-	boundVisualizer->setMagSliderValue();
+	//boundVisualizer->setMagSliderValue();
 
 	/*ui->gradienttf_widget->setVisible(true);
 	double max_gradient = dicomSeriesReader->getMaxGradientValue();
