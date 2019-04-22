@@ -11,7 +11,7 @@ BoundVisualizer::BoundVisualizer(QFrame * vtk_frame, QString name, QFrame * slid
 	magnitude_min_label = vtk_frame->findChild<QLabel*>("magnitude_min_label");
 	magnitude_cur_label = vtk_frame->findChild<QLabel*>("magnitude_cur_label");
 
-	mag_threshold = 0;
+	mag_threshold = 10;
 }
 
 BoundVisualizer::~BoundVisualizer()
@@ -71,13 +71,20 @@ QString BoundVisualizer::getPositionMag(int x, int y)
 		return "None";
 }
 
-void BoundVisualizer::visualizeData()
-{
-	double range[2];
-	getOriginData()->GetScalarRange(range);
-	cout << "roi gray range: " << range[0] << " " << range[1] << endl;
 
-	//calc the gradient magnitude of original data and thresh with mag_thresh
+void BoundVisualizer::updateVisualData()
+{
+	mag_thresh->ThresholdByUpper(mag_threshold);
+	mag_thresh->Update();
+
+	int slice = viewer->GetSlice();
+	viewer->SetSlice(slice);
+	viewer->Render();
+}
+
+void BoundVisualizer::transferData()
+{
+	//thresh the magnitude
 	// Smooth the image
 	vtkSmartPointer<vtkImageGaussianSmooth> gs = vtkSmartPointer<vtkImageGaussianSmooth>::New();
 	gs->SetInputData(getOriginData());
@@ -106,65 +113,28 @@ void BoundVisualizer::visualizeData()
 	ic->SetOutputScalarTypeToFloat();
 	ic->Update();
 
-	//thresh the magnitude
-	mag_thresh->SetInputData(ic->GetOutput());
-	mag_thresh->ThresholdByUpper(mag_threshold);
-	mag_thresh->Update();
-
-	//setVisualData(mag_thresh->GetOutput());
-
-	viewer->SetInputConnection(mag_thresh->GetOutputPort());
-	visual_widget->SetRenderWindow(viewer->GetRenderWindow());
-	viewer->SetupInteractor(visual_widget->GetInteractor());
-
-	vtkSmartPointer<myVtkInteractorStyleImage> myInteractorStyle = vtkSmartPointer<myVtkInteractorStyleImage>::New();
-	myInteractorStyle->SetImageViewer(viewer);
-	myInteractorStyle->SetSliderSlices(dicom_slider, slider_min_label, slider_max_label, slider_cur_label);
-	visual_widget->GetInteractor()->SetInteractorStyle(myInteractorStyle);
-	visual_widget->GetInteractor()->Initialize();
-
-	viewer->SetSlice(0);
-	viewer->GetRenderer()->ResetCamera();
-	viewer->Render();
-	visual_widget->GetInteractor()->Start();
-
-	//magnitude slider
+	//get range
 	double mag_range[2];
-	mag_thresh->GetOutput()->GetScalarRange(mag_range);
-
-	magnitude_thresh_slider->setMaximum(int(mag_range[1]));
-	magnitude_thresh_slider->setMinimum(int(mag_range[0]));
-	magnitude_max_label->setText(QString::number(mag_range[1]));
-	magnitude_min_label->setText(QString::number(mag_range[0]));
-	magnitude_cur_label->setText(QString::number(mag_threshold));
-}
-
-void BoundVisualizer::updateVisualData()
-{
-	//thresh the magnitude
-	/*vtkSmartPointer<vtkImageThreshold> mag_thresh = vtkSmartPointer<vtkImageThreshold>::New();
-	mag_thresh->SetInputData(getVisualData());*/
-	mag_thresh->ThresholdByUpper(mag_threshold);
-	mag_thresh->Update();
-	double mag_range[2];
-	mag_thresh->GetOutput()->GetScalarRange(mag_range);
+	ic->GetOutput()->GetScalarRange(mag_range);
 	cout << "mag range: " << mag_range[0] << " " << mag_range[1] << endl;
 
-	//setVisualData(mag_thresh->GetOutput());
+	//thresh the magnitude
+	mag_thresh->SetInputData(ic->GetOutput());
 
-	//viewer->SetInputData(getVisualData());
-	int slice = viewer->GetSlice();
-	viewer->SetSlice(slice);
-	viewer->Render();
+	mag_thresh->ThresholdByUpper(mag_threshold);
+	mag_thresh->ReplaceInOff();
+	mag_thresh->ReplaceOutOn();
+	mag_thresh->SetOutValue(0);
+	mag_thresh->Update();
 
+	setVisualData(mag_thresh->GetOutput());
+
+	//set slider value
 	magnitude_cur_label->setText(QString::number(mag_threshold));
-}
-
-void BoundVisualizer::transferData()
-{
-}
-
-void BoundVisualizer::setMagSliderValue()
-{
+	magnitude_max_label->setText(QString::number(mag_range[1], 10, 0));
+	magnitude_min_label->setText(QString::number(mag_range[0], 10, 0));
+	magnitude_thresh_slider->setMaximum(mag_range[1]);
+	magnitude_thresh_slider->setMinimum(mag_range[0]);
+	magnitude_thresh_slider->setValue(mag_threshold);
 }
 
