@@ -46,11 +46,15 @@ MainWindow::MainWindow(QWidget *parent) :
 	//roi gray range slider
 	connect(ui->roi_range_slider, SIGNAL(lowerValueChanged(int)), this, SLOT(onRoiGrayMinChangeSlot(int)));
 	connect(ui->roi_range_slider, SIGNAL(upperValueChanged(int)), this, SLOT(onRoiGrayMaxChangeSlot(int)));
-
+	
 	connect(ui->bound_extraction_button, SIGNAL(released()), this, SLOT(onRoiToBoundSlot()));
 
 	//bound magnitude slider
 	connect(ui->magnitude_thresh_slider, SIGNAL(valueChanged(int)), this, SLOT(onMagThreshChangeSlot(int)));
+
+	//roi button
+	connect(ui->roi_render_button, SIGNAL(released()), this, SLOT(onRoiRenderSlot()));
+	connect(ui->roiBound_render_button, SIGNAL(released()), this, SLOT(onRoiBoundRenderSlot()));
 
 	//*******************menu****************
 	connect(ui->actionOpenFolder, SIGNAL(triggered()), this, SLOT(onOpenFolderSlot()));
@@ -378,12 +382,14 @@ void MainWindow::onBoundExtractionButton()
 
 void MainWindow::onRoiGrayMinChangeSlot(int aMin)
 {
+	ui->roi_minGv_label->setText(QString::number(aMin));
 	if (roiVisualizer->setRoiGrayRange(aMin, roiVisualizer->getRoiRangeMax()))
 		roiVisualizer->updateVisualData();
 }
 
 void MainWindow::onRoiGrayMaxChangeSlot(int aMax)
 {
+	ui->roi_maxGv_label->setText(QString::number(aMax));
 	if (roiVisualizer->setRoiGrayRange(roiVisualizer->getRoiRangeMin(), aMax))
 		roiVisualizer->updateVisualData();
 }
@@ -396,8 +402,37 @@ void MainWindow::onRoiToBoundSlot()
 
 void MainWindow::onMagThreshChangeSlot(int pos)
 {
+	ui->roiBound_thresh_label->setText(QString::number(pos));
 	boundVisualizer->setMagnitudeThresh(pos);
 	boundVisualizer->updateVisualData();
+}
+
+void MainWindow::onRoiRenderSlot()
+{
+	map<double, double> customized_gray_tf;
+
+	double roi_gv_min = roiVisualizer->getRoiRangeMin();
+	double roi_gv_max = roiVisualizer->getRoiRangeMax();
+	customized_gray_tf.insert(pair<double, double>(roi_gv_min - 1, 0.0));
+	customized_gray_tf.insert(pair<double, double>(roi_gv_min, 1.0));
+	customized_gray_tf.insert(pair<double, double>(roi_gv_max, 1.0));
+	customized_gray_tf.insert(pair<double, double>(roi_gv_max + 1, 0.0));
+
+	double max_gv = vrProcess->getMaxGrayValue();
+	double min_gv = vrProcess->getMinGrayValue();
+
+	if (min_gv != roi_gv_min)
+		customized_gray_tf.insert(pair<double, double>(min_gv, 0.0));
+	if(max_gv != roi_gv_max)
+		customized_gray_tf.insert(pair<double, double>(max_gv, 0.0));
+
+	opacityTf->setCustomizedOpacityTf(vrProcess->getVolumeOpacityTf(), customized_gray_tf);
+	vrProcess->update();
+}
+
+void MainWindow::onRoiBoundRenderSlot()
+{
+	boundVisualizer->calcRoiBoundPoly(roiVisualizer->getVisualData(), boundVisualizer->getVisualData());
 }
 
 
@@ -444,9 +479,10 @@ void MainWindow::onOpenFolderSlot()
 	opacityTf->setMaxKey(max_gv);
 	opacityTf->setMinKey(min_gv);
 
-	//set initial render style and draw initial tf
+	//set initial color ang gray-opacity render style and draw initial tf
 	colorTf->setBoneColorTf(vrProcess->getVolumeColorTf());
 	opacityTf->setBoneOpacityTf(vrProcess->getVolumeOpacityTf());
+
 	vrProcess->update();
 
 	//********************************************show dicoms series********************************************
@@ -459,11 +495,11 @@ void MainWindow::onOpenFolderSlot()
 
 	boundVisualizer->setOriginData(roiVisualizer->getVisualData());
 	boundVisualizer->visualizeData();
-	//boundVisualizer->setMagSliderValue();
 
-	/*ui->gradienttf_widget->setVisible(true);
-	double max_gradient = dicomSeriesReader->getMaxGradientValue();
-	double min_gradient = dicomSeriesReader->getMinGradientValue();
+	//set initial gradient-opactiy render style  and draw initial tf
+	ui->gradienttf_widget->setVisible(true);
+	double max_gradient = boundVisualizer->getMaxBoundGradientValue();
+	double min_gradient = boundVisualizer->getMinBoundGradientValue();
 
 	gradientTf->setMaxKey(max_gradient);
 	gradientTf->setMinKey(min_gradient);
@@ -471,11 +507,8 @@ void MainWindow::onOpenFolderSlot()
 	map<double, double> init_gradient_tf;
 	init_gradient_tf.insert(pair<double, double>(min_gradient, 1.0));
 	init_gradient_tf.insert(pair<double, double>(max_gradient, 1.0));
-	gradientTf->setCustomizedOpacityTf(vrProcess->getVolumeGradientTf(), init_gradient_tf); */
+	gradientTf->setCustomizedOpacityTf(vrProcess->getVolumeGradientTf(), init_gradient_tf);
 	vrProcess->update();
-
-	//********************************************show edge********************************************
-	//dicomSeriesReader->cannyEdgeExtraction();
 }
 
 void MainWindow::onSetBoneStyle()

@@ -10,6 +10,10 @@ public:
 	void transferData();
 	void showPositionGray(int x, int y);
 	void showPositionMag(QString);
+
+	vtkSmartPointer<vtkImageData> getOriginGrayData();
+	vtkSmartPointer<vtkImageData> getOriginMagnitudeData();
+
 private:
 	QLabel * dicom_coords_label;
 	QLabel * dicom_gray_label;

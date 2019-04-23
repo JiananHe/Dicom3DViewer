@@ -72,3 +72,38 @@ void DicomVisualizer::showPositionMag(QString text)
 {
 	dicom_mag_label->setText(text);
 }
+
+vtkSmartPointer<vtkImageData> DicomVisualizer::getOriginGrayData()
+{
+	return getVisualData();
+}
+
+vtkSmartPointer<vtkImageData> DicomVisualizer::getOriginMagnitudeData()
+{
+	//vtkSmartPointer<vtkImageData> origin_mag = vtkSmartPointer<vtkImageData>::New();
+
+	vtkSmartPointer<vtkImageGaussianSmooth> gs = vtkSmartPointer<vtkImageGaussianSmooth>::New();
+	gs->SetInputData(getVisualData());
+	gs->SetDimensionality(3);
+	gs->SetRadiusFactors(1, 1, 0);
+
+	vtkSmartPointer<vtkImageGradient> origin_gd = vtkSmartPointer<vtkImageGradient>::New();
+	origin_gd->SetInputConnection(gs->GetOutputPort());
+	origin_gd->SetDimensionality(3);
+	origin_gd->Update();
+
+	vtkSmartPointer<vtkImageMagnitude> origin_mag = vtkSmartPointer<vtkImageMagnitude>::New();
+	origin_mag->SetInputConnection(origin_gd->GetOutputPort());
+	origin_mag->Update();
+
+	double origin_mag_range[2];
+	origin_mag->GetOutput()->GetScalarRange(origin_mag_range);
+	cout << "origin_mag_range: " << origin_mag_range[0] << " " << origin_mag_range[1] << endl;
+
+	vtkSmartPointer<vtkImageCast> ic = vtkSmartPointer<vtkImageCast>::New();
+	ic->SetInputData(origin_mag->GetOutput());
+	ic->SetOutputScalarTypeToFloat();
+	ic->Update();
+
+	return ic->GetOutput();
+}

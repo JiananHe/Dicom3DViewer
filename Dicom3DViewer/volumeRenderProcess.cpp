@@ -140,6 +140,7 @@ void VolumeRenderProcess::saveAsSTL()
 
 void VolumeRenderProcess::update()
 {
+	volume_render->ResetCamera();
 	my_vr_widget->GetRenderWindow()->Render();
 	my_vr_widget->update();
 }

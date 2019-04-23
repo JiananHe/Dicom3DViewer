@@ -67,6 +67,9 @@ private slots:
 
 	void onRoiToBoundSlot();
 	void onMagThreshChangeSlot(int);
+
+	void onRoiRenderSlot();
+	void onRoiBoundRenderSlot();
 };
 
 #endif // MAINWINDOW_H

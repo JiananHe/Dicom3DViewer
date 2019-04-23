@@ -28,7 +28,7 @@
     <property name="geometry">
      <rect>
       <x>1300</x>
-      <y>171</y>
+      <y>160</y>
       <width>601</width>
       <height>151</height>
      </rect>
@@ -378,9 +378,9 @@
    <widget class="QFrame" name="bound_extraction_frame">
     <property name="geometry">
      <rect>
-      <x>690</x>
-      <y>810</y>
-      <width>441</width>
+      <x>600</x>
+      <y>820</y>
+      <width>641</width>
       <height>111</height>
      </rect>
     </property>
@@ -403,20 +403,20 @@
       <string>不透明传递函数生成：</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton">
+    <widget class="QPushButton" name="roi_render_button">
      <property name="geometry">
       <rect>
-       <x>330</x>
-       <y>40</y>
+       <x>270</x>
+       <y>60</y>
        <width>93</width>
        <height>41</height>
       </rect>
      </property>
      <property name="text">
-      <string>边界提取</string>
+      <string>ROI绘制</string>
      </property>
     </widget>
-    <widget class="QTextEdit" name="bound_grayValue_label">
+    <widget class="QTextEdit" name="roi_minGv_label">
      <property name="geometry">
       <rect>
        <x>72</x>
@@ -426,10 +426,10 @@
       </rect>
      </property>
     </widget>
-    <widget class="QTextEdit" name="bound_grayOffset_label">
+    <widget class="QTextEdit" name="roi_maxGv_label">
      <property name="geometry">
       <rect>
-       <x>218</x>
+       <x>180</x>
        <y>70</y>
        <width>71</width>
        <height>31</height>
@@ -439,21 +439,21 @@
     <widget class="QLabel" name="label_12">
      <property name="geometry">
       <rect>
-       <x>170</x>
-       <y>80</y>
-       <width>41</width>
+       <x>150</x>
+       <y>75</y>
+       <width>31</width>
        <height>16</height>
       </rect>
      </property>
      <property name="text">
-      <string>偏移:</string>
+      <string>---</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_11">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>45</y>
+       <y>40</y>
        <width>72</width>
        <height>15</height>
       </rect>
@@ -475,12 +475,77 @@
       <string>灰度值：</string>
      </property>
     </widget>
+    <widget class="QFrame" name="frame">
+     <property name="geometry">
+      <rect>
+       <x>380</x>
+       <y>30</y>
+       <width>261</width>
+       <height>80</height>
+      </rect>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <widget class="QLabel" name="label_4">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>101</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>ROI边界提取：</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_6">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>72</width>
+        <height>15</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>梯度阈值：</string>
+      </property>
+     </widget>
+     <widget class="QTextEdit" name="roiBound_thresh_label">
+      <property name="geometry">
+       <rect>
+        <x>80</x>
+        <y>40</y>
+        <width>71</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="roiBound_render_button">
+      <property name="geometry">
+       <rect>
+        <x>160</x>
+        <y>30</y>
+        <width>93</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>ROI边界绘制</string>
+      </property>
+     </widget>
+    </widget>
    </widget>
    <widget class="QWidget" name="gradienttf_widget" native="true">
     <property name="geometry">
      <rect>
       <x>1300</x>
-      <y>361</y>
+      <y>350</y>
       <width>601</width>
       <height>151</height>
      </rect>
@@ -992,7 +1057,7 @@
      <x>0</x>
      <y>0</y>
      <width>1920</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">
