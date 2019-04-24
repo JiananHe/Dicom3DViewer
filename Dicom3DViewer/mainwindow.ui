@@ -721,6 +721,19 @@
       <string>1</string>
      </property>
     </widget>
+    <widget class="QPushButton" name="gradient_reset_button">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>71</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Reset</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QFrame" name="dicom_frame">
     <property name="geometry">
@@ -1057,7 +1070,7 @@
      <x>0</x>
      <y>0</y>
      <width>1920</width>
-     <height>23</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">

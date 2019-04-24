@@ -135,7 +135,7 @@ template<typename T>
 inline void TransferFunction<T>::changeCurBpKeyByKeyboard(int flag)
 {
 	double cur_key = tf_bps->getBpKeyAt(cur_bp_idx, 0);
-	double move_gap = 1;
+	double move_gap = 5;
 	if (flag == -1)
 	{
 		if (cur_key - move_gap >= min_key && tf_bps->findElementInApprox(cur_key - move_gap, move_gap - 0.01) == -1)

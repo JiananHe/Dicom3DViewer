@@ -206,7 +206,7 @@ void OpacityTransferFunctioin::changeCurBpValueByboard(int flag)
 {
 	double cur_key = tf_bps->getBpKeyAt(cur_bp_idx, 0);
 	double cur_value = tf_bps->getBpValueAt(cur_bp_idx);
-	double move_gap = 0.02;
+	double move_gap = 0.1;
 	if (flag == -1)
 	{
 		tf_bps->deleteBpAt(cur_bp_idx);

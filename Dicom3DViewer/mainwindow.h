@@ -70,6 +70,7 @@ private slots:
 
 	void onRoiRenderSlot();
 	void onRoiBoundRenderSlot();
+	void onResetGradientTfSlot();
 };
 
 #endif // MAINWINDOW_H

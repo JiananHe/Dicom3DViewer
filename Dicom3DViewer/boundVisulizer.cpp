@@ -147,73 +147,167 @@ void BoundVisualizer::updateVisualData()
 	int slice = viewer->GetSlice();
 	viewer->SetSlice(slice);
 	viewer->Render();
+	magnitude_cur_label->setText(QString::number(mag_threshold));
 }
 
-void BoundVisualizer::calcRoiBoundPoly(vtkSmartPointer<vtkImageData> origin_gray, vtkSmartPointer<vtkImageData> origin_mag)
+map<double, double> BoundVisualizer::getRoiBoundMagBp()
 {
 	roi_bound_gd.clear();
-	roi_bound_gv.clear();
+	double res[3] = { 0.0 };
 
 	mag_thresh_poly->SetUpperThreshold(mag_threshold);
 	mag_thresh_poly->SetInputData(nonMaxFloat);
 	mag_thresh_poly->Update();
-	cout << "Number of points in max_thresh_poly: " << mag_thresh_poly->GetOutput()->GetNumberOfPoints() << endl;
 
-	int dims[3];
-	origin_gray->GetDimensions(dims);
+	int total_count = mag_thresh_poly->GetOutput()->GetNumberOfPoints();
+	mag_thresh_poly->GetOutput()->GetScalarRange(mag_range);
 
-	double poly_bounds[6];
-	mag_thresh_poly->GetOutput()->GetBounds(poly_bounds);
-	double spacing_x = (poly_bounds[1] - poly_bounds[0]) / (dims[0] - 1);
-	double spacing_y = (poly_bounds[3] - poly_bounds[2]) / (dims[1] - 1);
-	double spacing_z = (poly_bounds[5] - poly_bounds[4]) / (dims[2] - 1);
-
-	//get range
-	double gray_range[2];
-	origin_gray->GetScalarRange(gray_range);
-	double mag_range[2];
-	origin_mag->GetScalarRange(mag_range);
-
-	int gv_size = int(gray_range[1] + 0.5) - int(gray_range[0]);
-	int * roi_bound_gvs = new int[gv_size];
-	memset(roi_bound_gvs, 0, gv_size);
+	cout << "roi bound mag range: " << mag_range[0] << " " << mag_range[1] << endl;
+	res[0] = mag_range[0];
+	res[2] = mag_range[1];
 
 	int gd_size = int(mag_range[1] + 0.5) - int(mag_range[0]);
 	int * roi_bound_gds = new int[gd_size];
-	memset(roi_bound_gds, 0, gd_size);
+	memset(roi_bound_gds, 0, gd_size * sizeof(int));
 
-	for (int i = 0; i < mag_thresh_poly->GetOutput()->GetNumberOfPoints(); i++)
+	multimap<int, double> roi_num_gd;
+	multimap<double, double> roi_gd_gap;
+
+	vtkPointData * ele = mag_thresh_poly->GetOutput()->GetPointData();
+	vtkDataArray * ele_array = ele->GetScalars();
+	int num = ele_array->GetNumberOfValues();
+	for (int j = 0; j < num; j++)
 	{
-		//map poly coords to data coords
-		double poly_coords[3];
-		int data_coords[3];
-		mag_thresh_poly->GetOutput()->GetPoint(i, poly_coords);
-		data_coords[0] = (poly_coords[0] - poly_bounds[0]) / spacing_x;
-		data_coords[1] = (poly_coords[1] - poly_bounds[2]) / spacing_y;
-		data_coords[2] = (poly_coords[2] - poly_bounds[4]) / spacing_z;
-
-		float * ele_mag = (float *)origin_mag->GetScalarPointer(data_coords);
-		float * ele_gray = (float *)origin_gray->GetScalarPointer(data_coords);
-
-		++roi_bound_gvs[int(*ele_gray - gray_range[0])];
-		++roi_bound_gds[int(*ele_mag - mag_range[0])];
-		/*roi_bound_gv.push_back(int(*ele_gray + 0.5));
-		roi_bound_gd.push_back(int(*ele_magnitude + 0.5));*/
+		double * t = ele_array->GetTuple(j);
+		++roi_bound_gds[int(*t - mag_range[0])];
 	}
 
-	int * gv_max = max_element(roi_bound_gvs, roi_bound_gvs + gv_size);
-	cout << "max gv: " << distance(roi_bound_gvs, gv_max) << " with " << *gv_max << " points" << endl;
 	int * gd_max = max_element(roi_bound_gds, roi_bound_gds + gd_size);
-	cout << "max gd: " << distance(roi_bound_gds, gd_max) << " with " << *gd_max << " points" << endl;
-}
+	res[1] = distance(roi_bound_gds, gd_max) + mag_range[0];
+	cout << "max gd: " << res[1] << " with " << *gd_max << " points" << endl;
+	cout << roi_bound_gd.max_size() << endl;
+	for (int i = 0; i < gd_size; i++)
+	{
+		double mag = i + mag_range[0];
+		int mag_num = roi_bound_gds[i];
+		//if (mag_num < total_count / gd_size)
+		if(mag_num != 0)
+			roi_num_gd.insert(pair<int, double>(mag_num, mag));
+	}
 
-vector<int> BoundVisualizer::getRoiBoundGvs()
-{
-	return roi_bound_gv;
-}
+	double max_num_gd_opacity = 1.0;
+	int bp_num = 5;
+	int gd_gap = gd_size / bp_num;
 
-vector<int> BoundVisualizer::getRoiBoundGds()
-{
+	multimap<int, double>::iterator iter = roi_num_gd.begin();
+	int j = 0;
+	double gd_gap_sum = .0;
+	double gd_count_sum = .0;
+	double gd_count_sum_max = .0;
+	for (; iter != roi_num_gd.end(); ++iter)
+	{
+		gd_gap_sum += iter->second;
+		gd_count_sum += iter->first;
+		++j;
+
+		if (j == gd_gap)
+		{
+			roi_gd_gap.insert(pair<double, double>(gd_gap_sum / j, gd_count_sum));
+			if (gd_count_sum_max < gd_count_sum)
+				gd_count_sum_max = gd_count_sum;
+			gd_gap_sum = .0;
+			gd_count_sum = .0;
+			j = 0;
+		}
+	}
+	if (j != 0)
+	{
+		roi_gd_gap.insert(pair<double, double>(gd_gap_sum / j, gd_count_sum));
+		if (gd_count_sum_max < gd_count_sum)
+			gd_count_sum_max = gd_count_sum;
+	}
+
+	multimap<double, double>::iterator iter1 = roi_gd_gap.begin();
+	double mag = iter1->first;
+	roi_bound_gd.insert(pair<double, double>(mag - 1, 0.0));
+	for (; iter1 != roi_gd_gap.end(); ++iter1)
+	{
+		mag = iter1->first;
+		double mag_num_sum = iter1->second;
+		double opacity = mag_num_sum / gd_count_sum_max * max_num_gd_opacity;
+		roi_bound_gd.insert(pair<double, double>(mag, opacity));
+	}
+	roi_bound_gd.insert(pair<double, double>(mag + 1, 0.0));
+
 	return roi_bound_gd;
+	/*for (map<double, double>::iterator iter = roi_bound_gd.begin(); iter != roi_bound_gd.end(); ++iter)
+	{
+		cout << "mag " << iter->second << " with " << iter->first << " points" << endl;
+	}
+	return res;*/
+
+	//roi_bound_gd.clear();
+	//roi_bound_gv.clear();
+
+	//mag_thresh_poly->SetUpperThreshold(mag_threshold);
+	//mag_thresh_poly->SetInputData(nonMaxFloat);
+	//mag_thresh_poly->Update();
+	//cout << "Number of points in max_thresh_poly: " << mag_thresh_poly->GetOutput()->GetNumberOfPoints() << endl;
+
+	//int dims[3];
+	//origin_gray->GetDimensions(dims);
+
+	//double poly_bounds[6];
+	//mag_thresh_poly->GetOutput()->GetBounds(poly_bounds);
+	//double spacing_x = (poly_bounds[1] - poly_bounds[0]) / (dims[0] - 1);
+	//double spacing_y = (poly_bounds[3] - poly_bounds[2]) / (dims[1] - 1);
+	//double spacing_z = (poly_bounds[5] - poly_bounds[4]) / (dims[2] - 1);
+
+	////get range
+	//double gray_range[2];
+	//origin_gray->GetScalarRange(gray_range);
+	//double mag_range[2];
+	//origin_mag->GetScalarRange(mag_range);
+
+	//int gv_size = int(gray_range[1] + 0.5) - int(gray_range[0]);
+	//int * roi_bound_gvs = new int[gv_size];
+	//memset(roi_bound_gvs, 0, gv_size);
+
+	//int gd_size = int(mag_range[1] + 0.5) - int(mag_range[0]);
+	//int * roi_bound_gds = new int[gd_size];
+	//memset(roi_bound_gds, 0, gd_size);
+
+	//for (int i = 0; i < mag_thresh_poly->GetOutput()->GetNumberOfPoints(); i++)
+	//{
+	//	//map poly coords to data coords
+	//	double poly_coords[3];
+	//	int data_coords[3];
+	//	mag_thresh_poly->GetOutput()->GetPoint(i, poly_coords);
+	//	data_coords[0] = (poly_coords[0] - poly_bounds[0]) / spacing_x;
+	//	data_coords[1] = (poly_coords[1] - poly_bounds[2]) / spacing_y;
+	//	data_coords[2] = (poly_coords[2] - poly_bounds[4]) / spacing_z;
+
+	//	float * ele_mag = (float *)origin_mag->GetScalarPointer(data_coords);
+	//	float * ele_gray = (float *)origin_gray->GetScalarPointer(data_coords);
+
+	//	++roi_bound_gvs[int(*ele_gray - gray_range[0])];
+	//	++roi_bound_gds[int(*ele_mag - mag_range[0])];
+	//	/*roi_bound_gv.push_back(int(*ele_gray + 0.5));
+	//	roi_bound_gd.push_back(int(*ele_magnitude + 0.5));*/
+	//}
+
+	//int * gv_max = max_element(roi_bound_gvs, roi_bound_gvs + gv_size);
+	//cout << "max gv: " << distance(roi_bound_gvs, gv_max) << " with " << *gv_max << " points" << endl;
+	//int * gd_max = max_element(roi_bound_gds, roi_bound_gds + gd_size);
+	//cout << "max gd: " << distance(roi_bound_gds, gd_max) << " with " << *gd_max << " points" << endl;
 }
 
+//vector<int> BoundVisualizer::getRoiBoundGvs()
+//{
+//	return roi_bound_gv;
+//}
+//
+//vector<int> BoundVisualizer::getRoiBoundGds()
+//{
+//	return roi_bound_gd;
+//}

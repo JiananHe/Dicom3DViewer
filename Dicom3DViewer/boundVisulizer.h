@@ -2,6 +2,9 @@
 #include "seriesVisualizer.h"
 #include <vtkThresholdPoints.h>
 #include <vector>
+#include <set>
+#include <map>
+
 using namespace std;
 
 class BoundVisualizer : public SeriesVisualizer
@@ -19,9 +22,9 @@ public:
 	float getMaxBoundGradientValue();
 	float getMinBoundGradientValue();
 
-	void calcRoiBoundPoly(vtkSmartPointer<vtkImageData>, vtkSmartPointer<vtkImageData>);
-	vector<int> getRoiBoundGvs();
-	vector<int> getRoiBoundGds();
+	map<double, double> getRoiBoundMagBp();
+	/*vector<int> getRoiBoundGvs();
+	vector<int> getRoiBoundGds();*/
 
 private:
 	float mag_threshold;
@@ -36,6 +39,9 @@ private:
 	QLabel * magnitude_min_label;
 	QLabel * magnitude_cur_label;
 
-	vector<int> roi_bound_gv;
-	vector<int> roi_bound_gd;
+	/*multiset<int> roi_bound_gv;
+	multiset<int> roi_bound_gd;*/
+	//vector<int> roi_bound_gv;
+	//vector<int> roi_bound_gd;
+	map<double, double> roi_bound_gd;
 };

@@ -36,7 +36,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->gradienttf_bar->installEventFilter(this);
 	ui->gradienttf_curbp_gradient_label->installEventFilter(this);
 	connect(ui->gradienttf_verticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(onShowGradientBpInfoAt(int)));
-	
+	connect(ui->gradient_reset_button, SIGNAL(released()), this, SLOT(onResetGradientTfSlot()));
+
 	////dicom series reader
 	ui->dicom_widget->installEventFilter(this);
 	//dicom slider
@@ -402,7 +403,7 @@ void MainWindow::onRoiToBoundSlot()
 
 void MainWindow::onMagThreshChangeSlot(int pos)
 {
-	ui->roiBound_thresh_label->setText(QString::number(pos));
+	//ui->magnitude_cur_label->setText(QString::number(pos));
 	boundVisualizer->setMagnitudeThresh(pos);
 	boundVisualizer->updateVisualData();
 }
@@ -432,9 +433,23 @@ void MainWindow::onRoiRenderSlot()
 
 void MainWindow::onRoiBoundRenderSlot()
 {
-	boundVisualizer->calcRoiBoundPoly(roiVisualizer->getVisualData(), boundVisualizer->getVisualData());
-}
+	gradientTf->setCustomizedOpacityTf(vrProcess->getVolumeGradientTf(), boundVisualizer->getRoiBoundMagBp());
+	vrProcess->update();
+ }
 
+void MainWindow::onResetGradientTfSlot()
+{
+	map<double, double> customized_mag_tf;
+
+	double roi_gd_min = boundVisualizer->getMinBoundGradientValue();
+	double roi_gd_max = boundVisualizer->getMaxBoundGradientValue();
+
+	customized_mag_tf.insert(pair<double, double>(roi_gd_min, 1.0));
+	customized_mag_tf.insert(pair<double, double>(roi_gd_max, 1.0));
+
+	gradientTf->setCustomizedOpacityTf(vrProcess->getVolumeGradientTf(), customized_mag_tf);
+	vrProcess->update();
+}
 
 void MainWindow::onDicomSeriesSlideMoveSlot(int pos)
 {
