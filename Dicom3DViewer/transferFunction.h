@@ -8,6 +8,7 @@
 #include <qtextedit.h>
 #include <QPainter>
 #include <QMouseEvent>
+#include <map>
 
 template<typename T>
 class TransferFunction
@@ -20,6 +21,8 @@ public:
 	void setMaxKey(double key);
 
 	T getCurBpValue();
+	map<double, T> getTfBpsMap();
+
 	tuple<int, int> getCurBpBorder();
 	void changeCurBpValue(T new_value);
 	void changeCurBpKey(int coord);
@@ -46,7 +49,6 @@ protected:
 	QLabel* cur_bpIdx_label;
 	QLabel* cur_bpKey_label;
 	QLabel* cur_bpValue_label;
-
 
 protected:
 	int d; //the diameter of cirlces in breakpoints
@@ -85,6 +87,13 @@ template<typename T>
 inline T TransferFunction<T>::getCurBpValue()
 {
 	return tf_bps->getBpValueAt(cur_bp_idx);
+}
+
+template<typename T>
+inline map<double, T> TransferFunction<T>::getTfBpsMap()
+{
+	return tf_bps->getBreakPointsMap();
+
 }
 
 //return the left and right bp coordinates

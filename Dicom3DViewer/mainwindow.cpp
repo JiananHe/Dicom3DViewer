@@ -55,7 +55,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	//roi button
 	connect(ui->roi_render_button, SIGNAL(released()), this, SLOT(onRoiRenderSlot()));
+	connect(ui->roi_render_button_2, SIGNAL(released()), this, SLOT(onRoiIncreaseRenderSlot()));
 	connect(ui->roiBound_render_button, SIGNAL(released()), this, SLOT(onRoiBoundRenderSlot()));
+	connect(ui->roiBound_render_button_2, SIGNAL(released()), this, SLOT(onRoiBoundIncreaseRenderSlot()));
 
 	//*******************menu****************
 	connect(ui->actionOpenFolder, SIGNAL(triggered()), this, SLOT(onOpenFolderSlot()));
@@ -406,10 +408,13 @@ void MainWindow::onMagThreshChangeSlot(int pos)
 	//ui->magnitude_cur_label->setText(QString::number(pos));
 	boundVisualizer->setMagnitudeThresh(pos);
 	boundVisualizer->updateVisualData();
+
+	ui->roiBound_thresh_label->setText(QString::number(pos));
 }
 
 void MainWindow::onRoiRenderSlot()
 {
+	onResetGradientTfSlot();
 	map<double, double> customized_gray_tf;
 
 	double roi_gv_min = roiVisualizer->getRoiRangeMin();
@@ -431,11 +436,44 @@ void MainWindow::onRoiRenderSlot()
 	vrProcess->update();
 }
 
+void MainWindow::onRoiIncreaseRenderSlot()
+{
+	map<double, double> gv_opacity_tf = opacityTf->getTfBpsMap();
+
+	double roi_gv_min = roiVisualizer->getRoiRangeMin();
+	double roi_gv_max = roiVisualizer->getRoiRangeMax();
+	gv_opacity_tf.insert(pair<double, double>(roi_gv_min - 1, 0.0));
+	gv_opacity_tf.insert(pair<double, double>(roi_gv_min, 1.0));
+	gv_opacity_tf.insert(pair<double, double>(roi_gv_max, 1.0));
+	gv_opacity_tf.insert(pair<double, double>(roi_gv_max + 1, 0.0));
+
+	double max_gv = vrProcess->getMaxGrayValue();
+	double min_gv = vrProcess->getMinGrayValue();
+
+	if (min_gv != roi_gv_min)
+		gv_opacity_tf.insert(pair<double, double>(min_gv, 0.0));
+	if (max_gv != roi_gv_max)
+		gv_opacity_tf.insert(pair<double, double>(max_gv, 0.0));
+
+	opacityTf->setCustomizedOpacityTf(vrProcess->getVolumeOpacityTf(), gv_opacity_tf);
+	vrProcess->update();
+}
+
 void MainWindow::onRoiBoundRenderSlot()
 {
 	gradientTf->setCustomizedOpacityTf(vrProcess->getVolumeGradientTf(), boundVisualizer->getRoiBoundMagBp());
 	vrProcess->update();
  }
+
+void MainWindow::onRoiBoundIncreaseRenderSlot()
+{
+	map<double, double> gd_opacity_tf = gradientTf->getTfBpsMap();
+	map<double, double> new_gd_opacity_tf = boundVisualizer->getRoiBoundMagBp();
+
+	gd_opacity_tf.insert(new_gd_opacity_tf.begin(), new_gd_opacity_tf.end());
+	gradientTf->setCustomizedOpacityTf(vrProcess->getVolumeGradientTf(), gd_opacity_tf);
+	vrProcess->update();
+}
 
 void MainWindow::onResetGradientTfSlot()
 {

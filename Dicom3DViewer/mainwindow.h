@@ -69,7 +69,9 @@ private slots:
 	void onMagThreshChangeSlot(int);
 
 	void onRoiRenderSlot();
+	void onRoiIncreaseRenderSlot();
 	void onRoiBoundRenderSlot();
+	void onRoiBoundIncreaseRenderSlot();
 	void onResetGradientTfSlot();
 };
 

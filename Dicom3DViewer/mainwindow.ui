@@ -378,9 +378,9 @@
    <widget class="QFrame" name="bound_extraction_frame">
     <property name="geometry">
      <rect>
-      <x>600</x>
+      <x>490</x>
       <y>820</y>
-      <width>641</width>
+      <width>791</width>
       <height>111</height>
      </rect>
     </property>
@@ -407,7 +407,7 @@
      <property name="geometry">
       <rect>
        <x>270</x>
-       <y>60</y>
+       <y>20</y>
        <width>93</width>
        <height>41</height>
       </rect>
@@ -417,6 +417,9 @@
      </property>
     </widget>
     <widget class="QTextEdit" name="roi_minGv_label">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>72</x>
@@ -427,6 +430,9 @@
      </property>
     </widget>
     <widget class="QTextEdit" name="roi_maxGv_label">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>180</x>
@@ -478,10 +484,10 @@
     <widget class="QFrame" name="frame">
      <property name="geometry">
       <rect>
-       <x>380</x>
-       <y>30</y>
-       <width>261</width>
-       <height>80</height>
+       <x>430</x>
+       <y>9</y>
+       <width>361</width>
+       <height>101</height>
       </rect>
      </property>
      <property name="frameShape">
@@ -493,7 +499,7 @@
      <widget class="QLabel" name="label_4">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>20</x>
         <y>10</y>
         <width>101</width>
         <height>16</height>
@@ -506,7 +512,7 @@
      <widget class="QLabel" name="label_6">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>110</x>
         <y>50</y>
         <width>72</width>
         <height>15</height>
@@ -517,9 +523,12 @@
       </property>
      </widget>
      <widget class="QTextEdit" name="roiBound_thresh_label">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="geometry">
        <rect>
-        <x>80</x>
+        <x>180</x>
         <y>40</y>
         <width>71</width>
         <height>31</height>
@@ -529,8 +538,8 @@
      <widget class="QPushButton" name="roiBound_render_button">
       <property name="geometry">
        <rect>
-        <x>160</x>
-        <y>30</y>
+        <x>260</x>
+        <y>10</y>
         <width>93</width>
         <height>41</height>
        </rect>
@@ -539,6 +548,45 @@
        <string>ROI边界绘制</string>
       </property>
      </widget>
+     <widget class="QPushButton" name="bound_extraction_button">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>40</y>
+        <width>81</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>边缘检测</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="roiBound_render_button_2">
+      <property name="geometry">
+       <rect>
+        <x>260</x>
+        <y>50</y>
+        <width>93</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>边界增量绘制</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QPushButton" name="roi_render_button_2">
+     <property name="geometry">
+      <rect>
+       <x>270</x>
+       <y>60</y>
+       <width>93</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>ROI增量绘制</string>
+     </property>
     </widget>
    </widget>
    <widget class="QWidget" name="gradienttf_widget" native="true">
@@ -1049,19 +1097,6 @@
       <string/>
      </property>
     </widget>
-   </widget>
-   <widget class="QPushButton" name="bound_extraction_button">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>900</y>
-      <width>93</width>
-      <height>28</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>边缘检测</string>
-    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
