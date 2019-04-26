@@ -1118,7 +1118,22 @@
      </property>
      <addaction name="actionSaveAsSTL"/>
     </widget>
-    <addaction name="actionOpenFolder"/>
+    <widget class="QMenu" name="menuOpen">
+     <property name="title">
+      <string>Open Folder</string>
+     </property>
+     <addaction name="actionOpenDicoms"/>
+     <addaction name="actionOpenNiis"/>
+    </widget>
+    <widget class="QMenu" name="menuOpen_File">
+     <property name="title">
+      <string>Open File</string>
+     </property>
+     <addaction name="actionOpenNII"/>
+    </widget>
+    <addaction name="menuOpen"/>
+    <addaction name="menuOpen_File"/>
+    <addaction name="actionShowHistory"/>
     <addaction name="menuSave_as"/>
    </widget>
    <widget class="QMenu" name="menuSetting">
@@ -1169,11 +1184,6 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="actionOpenFolder">
-   <property name="text">
-    <string>OpenFolder</string>
-   </property>
-  </action>
   <action name="actionBgColor">
    <property name="text">
     <string>BgColor</string>
@@ -1212,6 +1222,36 @@
   <action name="actionSaveAsSTL">
    <property name="text">
     <string>STL</string>
+   </property>
+  </action>
+  <action name="actionOpenDicoms">
+   <property name="text">
+    <string>DICOM(.dcm)</string>
+   </property>
+  </action>
+  <action name="action">
+   <property name="text">
+    <string>NIFTI(.nii)</string>
+   </property>
+  </action>
+  <action name="actionOpenNII">
+   <property name="text">
+    <string>NIFTI(.nii)</string>
+   </property>
+  </action>
+  <action name="actionAddNII">
+   <property name="text">
+    <string>NIFTI(.nii)</string>
+   </property>
+  </action>
+  <action name="actionOpenNiis">
+   <property name="text">
+    <string>NIFTI(.nii)</string>
+   </property>
+  </action>
+  <action name="actionShowHistory">
+   <property name="text">
+    <string>Show History</string>
    </property>
   </action>
  </widget>

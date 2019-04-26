@@ -60,7 +60,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(ui->roiBound_render_button_2, SIGNAL(released()), this, SLOT(onRoiBoundIncreaseRenderSlot()));
 
 	//*******************menu****************
-	connect(ui->actionOpenFolder, SIGNAL(triggered()), this, SLOT(onOpenFolderSlot()));
+	connect(ui->actionOpenDicoms, SIGNAL(triggered()), this, SLOT(onOpenDicomFolderSlot())); 
+	connect(ui->actionOpenNII, SIGNAL(triggered()), this, SLOT(onOpenDiiFileSlot()));
+	connect(ui->actionShowHistory, SIGNAL(triggered()), this, SLOT(onAddDiiFileSlot()));
 	connect(ui->actionBgColor, SIGNAL(triggered()), this, SLOT(onSetBgColorSlot()));
 
 	//set render style
@@ -508,11 +510,8 @@ void MainWindow::onSetBgColorSlot()
 	}
 }
 
-void MainWindow::onOpenFolderSlot()
+void MainWindow::onOpenDicomFolderSlot()
 {
-	QString filter;
-	filter = "DCM image file (*.dcm)";
-
 	// get folder path
 	QString folder_path = QFileDialog::getExistingDirectory(this, tr("Open DICOM Folder"), 
 		"C:\\Users\\13249\\Documents\\VTK_Related\\dataset", QFileDialog::ShowDirsOnly);
@@ -522,7 +521,7 @@ void MainWindow::onOpenFolderSlot()
 	ui->opacitytf_widget->setVisible(true);
 
 	//build the render pipeline
-	vrProcess->volumeRenderFlow(folder_path);
+	vrProcess->dicomsVolumeRenderFlow(folder_path);
 
 	double max_gv = vrProcess->getMaxGrayValue();
 	double min_gv = vrProcess->getMinGrayValue();
@@ -563,6 +562,122 @@ void MainWindow::onOpenFolderSlot()
 	gradientTf->setCustomizedOpacityTf(vrProcess->getVolumeGradientTf(), init_gradient_tf);
 	vrProcess->update();
 }
+
+
+void MainWindow::onOpenDiiFileSlot()
+{
+	QString filter;
+	filter = "NII file (*.nii)";
+
+	QDir dir;
+	QString fileName = QFileDialog::getOpenFileName(this, QString(tr("Open NII File")), 
+		"C:\\Users\\13249\\Documents\\VTK_Related\\dataset", filter);
+	if (fileName.isEmpty()) return;
+
+	//********************************************volume render********************************************
+	ui->colortf_widget->setVisible(true);
+	ui->opacitytf_widget->setVisible(true);
+
+	//build the render pipeline
+	vrProcess->niiVolumeRenderFlow(fileName);
+
+	double max_gv = vrProcess->getMaxGrayValue();
+	double min_gv = vrProcess->getMinGrayValue();
+
+	colorTf->setMaxKey(max_gv);
+	colorTf->setMinKey(min_gv);
+	opacityTf->setMaxKey(max_gv);
+	opacityTf->setMinKey(min_gv);
+
+	//set initial color ang gray-opacity render style and draw initial tf
+	colorTf->setBoneColorTf(vrProcess->getVolumeColorTf());
+	opacityTf->setBoneOpacityTf(vrProcess->getVolumeOpacityTf());
+
+	vrProcess->update();
+
+	//********************************************show dicoms series********************************************
+	//dicomSeriesReader->drawDicomSeries(folder_path);
+	dicomVisualizer->setOriginData(vrProcess->getNiiReader()->GetOutput());
+	dicomVisualizer->visualizeData();
+
+	roiVisualizer->setOriginData(dicomVisualizer->getVisualData());
+	roiVisualizer->visualizeData();
+
+	boundVisualizer->setOriginData(roiVisualizer->getVisualData());
+	boundVisualizer->visualizeData();
+
+	//set initial gradient-opactiy render style  and draw initial tf
+	ui->gradienttf_widget->setVisible(true);
+	double max_gradient = boundVisualizer->getMaxBoundGradientValue();
+	double min_gradient = boundVisualizer->getMinBoundGradientValue();
+
+	gradientTf->setMaxKey(max_gradient);
+	gradientTf->setMinKey(min_gradient);
+
+	map<double, double> init_gradient_tf;
+	init_gradient_tf.insert(pair<double, double>(min_gradient, 1.0));
+	init_gradient_tf.insert(pair<double, double>(max_gradient, 1.0));
+	gradientTf->setCustomizedOpacityTf(vrProcess->getVolumeGradientTf(), init_gradient_tf);
+	vrProcess->update();
+}
+
+void MainWindow::onAddDiiFileSlot()
+{
+	/*QString filter;
+	filter = "NII file (*.nii)";
+
+	QDir dir;
+	QString fileName = QFileDialog::getOpenFileName(this, QString(tr("Open NII File")),
+		"C:\\Users\\13249\\Documents\\VTK_Related\\dataset", filter);
+	if (fileName.isEmpty()) return;*/
+
+	//********************************************volume render********************************************
+	ui->colortf_widget->setVisible(true);
+	ui->opacitytf_widget->setVisible(true);
+
+	//build the render pipeline
+	vrProcess->addVolumeRenderFlow("");
+
+	double max_gv = vrProcess->getMaxGrayValue();
+	double min_gv = vrProcess->getMinGrayValue();
+
+	colorTf->setMaxKey(max_gv);
+	colorTf->setMinKey(min_gv);
+	opacityTf->setMaxKey(max_gv);
+	opacityTf->setMinKey(min_gv);
+
+	//set initial color ang gray-opacity render style and draw initial tf
+	colorTf->setBoneColorTf(vrProcess->getVolumeColorTf());
+	opacityTf->setBoneOpacityTf(vrProcess->getVolumeOpacityTf());
+
+	vrProcess->update();
+
+	//********************************************show dicoms series********************************************
+	//dicomSeriesReader->drawDicomSeries(folder_path);
+	dicomVisualizer->setOriginData(vrProcess->getNiiReader()->GetOutput());
+	dicomVisualizer->visualizeData();
+
+	roiVisualizer->setOriginData(dicomVisualizer->getVisualData());
+	roiVisualizer->visualizeData();
+
+	boundVisualizer->setOriginData(roiVisualizer->getVisualData());
+	boundVisualizer->visualizeData();
+
+	//set initial gradient-opactiy render style  and draw initial tf
+	ui->gradienttf_widget->setVisible(true);
+	double max_gradient = boundVisualizer->getMaxBoundGradientValue();
+	double min_gradient = boundVisualizer->getMinBoundGradientValue();
+
+	gradientTf->setMaxKey(max_gradient);
+	gradientTf->setMinKey(min_gradient);
+
+	map<double, double> init_gradient_tf;
+	init_gradient_tf.insert(pair<double, double>(min_gradient, 1.0));
+	init_gradient_tf.insert(pair<double, double>(max_gradient, 1.0));
+	gradientTf->setCustomizedOpacityTf(vrProcess->getVolumeGradientTf(), init_gradient_tf);
+	vrProcess->update();
+}
+
 
 void MainWindow::onSetBoneStyle()
 {

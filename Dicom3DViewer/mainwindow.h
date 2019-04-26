@@ -44,7 +44,9 @@ private:
 	
 
 private slots:
-	void onOpenFolderSlot();
+	void onOpenDicomFolderSlot();
+	void onOpenDiiFileSlot();
+	void onAddDiiFileSlot();
 	void onSetBgColorSlot();
 
 	void onSetBoneStyle();
