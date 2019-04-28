@@ -20,6 +20,7 @@
 #include <vtkSTLWriter.h>
 #include <vtkImageDataGeometryFilter.h>
 #include <vtkImageMathematics.h>
+#include <vtkImageShiftScale.h>
 
 class VolumeRenderProcess : public QVTKWidget
 {

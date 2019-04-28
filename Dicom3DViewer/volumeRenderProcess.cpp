@@ -14,11 +14,13 @@ VolumeRenderProcess::VolumeRenderProcess(QVTKWidget * qvtk_widget)
 	volumeScalarOpacity = vtkSmartPointer<vtkPiecewiseFunction>::New();
 	volumeGradientOpacity = vtkSmartPointer<vtkPiecewiseFunction>::New();
 	volume = vtkSmartPointer<vtkVolume>::New();
-	origin_data = vtkSmartPointer<vtkImageData>::New();
 
 	multi_volume = vtkSmartPointer<vtkMultiVolume>::New();
 	multi_volume_mapper = vtkSmartPointer<vtkGPUVolumeRayCastMapper>::New();
 	multi_volume->SetMapper(multi_volume_mapper);
+
+	origin_data = vtkSmartPointer<vtkImageData>::New();
+
 	volume_port = 0;
 }
 
@@ -110,13 +112,14 @@ void VolumeRenderProcess::niiVolumeRenderFlow(QString file_name)
 
 	vtkSmartPointer<vtkNIFTIImageReader> nii_reader1 = vtkSmartPointer<vtkNIFTIImageReader>::New();
 	nii_reader1->SetFileName(fileName_str);
-	nii_reader1->Update();
-
-	multi_volume_mapper->SetInputConnection(volume_port, nii_reader1->GetOutputPort());
+	nii_reader1->Update(); 
+	
+	multi_volume_mapper->SetInputConnection(volume_port, m->GetOutputPort());
 
 	//Mapper
 	vtkSmartPointer<vtkGPUVolumeRayCastMapper> RcGpuMapper = vtkSmartPointer<vtkGPUVolumeRayCastMapper>::New();
 	RcGpuMapper->SetInputData(origin_data);
+	
 
 	//vtkVolumeProperty
 	volumeProperty->RemoveAllObservers();
