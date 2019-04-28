@@ -20,7 +20,6 @@
 #include <vtkImageGaussianSmooth.h>
 #include <vtkImageGradient.h>
 #include <vtkImageMagnitude.h>
-#include <vtkImageMathematics.h>
 
 #include "mySeriesInteractorStyle.h"
 
@@ -76,22 +75,7 @@ inline SeriesVisualizer::~SeriesVisualizer()
 
 inline void SeriesVisualizer::setOriginData(vtkSmartPointer<vtkImageData> input_data)
 {
-	double range[2]; 
-	input_data->GetScalarRange(range);
-	if (range[0] == 0 && range[1] == 1)
-	{
-		cout << "Binary data!!" << endl;
-		vtkSmartPointer<vtkImageMathematics> m = vtkSmartPointer<vtkImageMathematics>::New();
-		m->SetInput1Data(input_data);
-		m->SetConstantK(255);
-		m->SetOperationToMultiplyByK();
-		m->Update();
-		origin_data = m->GetOutput();
-		origin_data->GetScalarRange(range);
-		cout << "After multiply: " << range[0] << " " << range[1] << endl;
-	}
-	else
-		origin_data = input_data;
+	origin_data = input_data;
 }
 
 inline void SeriesVisualizer::visualizeData()

@@ -6,9 +6,7 @@ VolumeRenderProcess::VolumeRenderProcess(QVTKWidget * qvtk_widget)
 
 	dicoms_reader = vtkSmartPointer<vtkDICOMImageReader>::New();
 	nii_reader = vtkSmartPointer<vtkNIFTIImageReader>::New();
-	nii_reader1 = vtkSmartPointer<vtkNIFTIImageReader>::New();
-	nii_reader2 = vtkSmartPointer<vtkNIFTIImageReader>::New();
-	nii_reader3 = vtkSmartPointer<vtkNIFTIImageReader>::New();
+	
 	volume_render = vtkSmartPointer<vtkRenderer>::New();
 
 	volumeProperty = vtkSmartPointer<vtkVolumeProperty>::New();
@@ -16,6 +14,7 @@ VolumeRenderProcess::VolumeRenderProcess(QVTKWidget * qvtk_widget)
 	volumeScalarOpacity = vtkSmartPointer<vtkPiecewiseFunction>::New();
 	volumeGradientOpacity = vtkSmartPointer<vtkPiecewiseFunction>::New();
 	volume = vtkSmartPointer<vtkVolume>::New();
+	origin_data = vtkSmartPointer<vtkImageData>::New();
 
 	multi_volume = vtkSmartPointer<vtkMultiVolume>::New();
 	multi_volume_mapper = vtkSmartPointer<vtkGPUVolumeRayCastMapper>::New();
@@ -80,28 +79,10 @@ void VolumeRenderProcess::niiVolumeRenderFlow(QString file_name)
 
 	//reader
 	dicoms_reader = vtkSmartPointer<vtkDICOMImageReader>::New();
+
 	nii_reader = vtkSmartPointer<vtkNIFTIImageReader>::New();
 	nii_reader->SetFileName(fileName_str);
 	nii_reader->Update();
-
-	if (volume_port == 0)
-	{
-		nii_reader1->SetFileName(fileName_str);
-		nii_reader1->Update();
-		multi_volume_mapper->SetInputConnection(volume_port, nii_reader1->GetOutputPort());
-	}
-	else if (volume_port == 2)
-	{
-		nii_reader2->SetFileName(fileName_str);
-		nii_reader2->Update();
-		multi_volume_mapper->SetInputConnection(volume_port, nii_reader2->GetOutputPort());
-	}
-	else if (volume_port == 4)
-	{
-		nii_reader3->SetFileName(fileName_str);
-		nii_reader3->Update();
-		multi_volume_mapper->SetInputConnection(volume_port, nii_reader3->GetOutputPort());
-	}
 
 	//get images dimension
 	int imageDims[3];
@@ -110,9 +91,32 @@ void VolumeRenderProcess::niiVolumeRenderFlow(QString file_name)
 	if (imageDims[0] == 0 || imageDims[1] == 0 || imageDims[2] == 0)
 		return;
 
+	//get range, and scale if necessary
+	double range[2];
+	nii_reader->GetOutput()->GetScalarRange(range);
+	vtkSmartPointer<vtkImageMathematics> m = vtkSmartPointer<vtkImageMathematics>::New();
+	if (range[0] == 0 && range[1] == 1)
+	{
+		cout << "Binary data!!" << endl;
+		m->SetInput1Data(nii_reader->GetOutput());
+		m->SetConstantK(255);
+		m->SetOperationToMultiplyByK();
+		m->Update();
+		origin_data = m->GetOutput();
+	}
+	else
+		origin_data = nii_reader->GetOutput();
+
+
+	vtkSmartPointer<vtkNIFTIImageReader> nii_reader1 = vtkSmartPointer<vtkNIFTIImageReader>::New();
+	nii_reader1->SetFileName(fileName_str);
+	nii_reader1->Update();
+
+	multi_volume_mapper->SetInputConnection(volume_port, nii_reader1->GetOutputPort());
+
 	//Mapper
 	vtkSmartPointer<vtkGPUVolumeRayCastMapper> RcGpuMapper = vtkSmartPointer<vtkGPUVolumeRayCastMapper>::New();
-	RcGpuMapper->SetInputConnection(nii_reader->GetOutputPort());
+	RcGpuMapper->SetInputData(origin_data);
 
 	//vtkVolumeProperty
 	volumeProperty->RemoveAllObservers();
@@ -204,8 +208,6 @@ void VolumeRenderProcess::addVolumeRenderFlow(QString file_name)
 	volume_render->AddVolume(multi_volume);
 	my_vr_widget->GetRenderWindow()->AddRenderer(volume_render);
 	my_vr_widget->GetRenderWindow()->Render();
-
-	volume_port += 2;
 }
 
 void VolumeRenderProcess::setBgColor(QColor color)
@@ -237,18 +239,18 @@ vtkDICOMImageReader * VolumeRenderProcess::getDicomReader()
 	return dicoms_reader;
 }
 
-vtkNIFTIImageReader * VolumeRenderProcess::getNiiReader()
+vtkImageData * VolumeRenderProcess::getNiiReaderOutput()
 {
-	return nii_reader;
+	return origin_data;
 }
 
 double VolumeRenderProcess::getMinGrayValue()
 {
 	double range[2];
 	if (nii_reader->GetFileName() == NULL)
-		dicoms_reader->GetOutput()->GetScalarRange(range);
+		origin_data->GetScalarRange(range);
 	if (dicoms_reader->GetDirectoryName() == NULL)
-		nii_reader->GetOutput()->GetScalarRange(range);
+		origin_data->GetScalarRange(range);
 	
 	return range[0];
 }
@@ -257,9 +259,9 @@ double VolumeRenderProcess::getMaxGrayValue()
 {
 	double range[2];
 	if (nii_reader->GetFileName() == NULL)
-		dicoms_reader->GetOutput()->GetScalarRange(range);
+		origin_data->GetScalarRange(range);
 	if (dicoms_reader->GetDirectoryName() == NULL)
-		nii_reader->GetOutput()->GetScalarRange(range);
+		origin_data->GetScalarRange(range);
 
 	return range[1];
 }

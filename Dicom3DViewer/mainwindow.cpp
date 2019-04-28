@@ -597,7 +597,7 @@ void MainWindow::onOpenDiiFileSlot()
 
 	//********************************************show dicoms series********************************************
 	//dicomSeriesReader->drawDicomSeries(folder_path);
-	dicomVisualizer->setOriginData(vrProcess->getNiiReader()->GetOutput());
+	dicomVisualizer->setOriginData(vrProcess->getNiiReaderOutput());
 	dicomVisualizer->visualizeData();
 
 	roiVisualizer->setOriginData(dicomVisualizer->getVisualData());
@@ -654,7 +654,7 @@ void MainWindow::onAddDiiFileSlot()
 
 	//********************************************show dicoms series********************************************
 	//dicomSeriesReader->drawDicomSeries(folder_path);
-	dicomVisualizer->setOriginData(vrProcess->getNiiReader()->GetOutput());
+	dicomVisualizer->setOriginData(vrProcess->getNiiReaderOutput());
 	dicomVisualizer->visualizeData();
 
 	roiVisualizer->setOriginData(dicomVisualizer->getVisualData());

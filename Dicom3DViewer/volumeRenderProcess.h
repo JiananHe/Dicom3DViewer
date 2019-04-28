@@ -19,6 +19,7 @@
 #include <vtkSmartVolumeMapper.h>
 #include <vtkSTLWriter.h>
 #include <vtkImageDataGeometryFilter.h>
+#include <vtkImageMathematics.h>
 
 class VolumeRenderProcess : public QVTKWidget
 {
@@ -35,7 +36,7 @@ public:
 	vtkPiecewiseFunction* getVolumeGradientTf();
 
 	vtkDICOMImageReader* getDicomReader();
-	vtkNIFTIImageReader* getNiiReader();
+	vtkImageData* getNiiReaderOutput();
 
 	double getMinGrayValue();
 	double getMaxGrayValue();
@@ -50,9 +51,6 @@ private:
 	QVTKWidget* my_vr_widget;
 	vtkSmartPointer<vtkDICOMImageReader> dicoms_reader;
 	vtkSmartPointer< vtkNIFTIImageReader> nii_reader;
-	vtkSmartPointer< vtkNIFTIImageReader> nii_reader1;
-	vtkSmartPointer< vtkNIFTIImageReader> nii_reader2;
-	vtkSmartPointer< vtkNIFTIImageReader> nii_reader3;
 	vtkSmartPointer<vtkRenderer> volume_render;
 
 	vtkSmartPointer<vtkMultiVolume> multi_volume;
@@ -63,6 +61,8 @@ private:
 	vtkSmartPointer<vtkPiecewiseFunction> volumeScalarOpacity;
 	vtkSmartPointer<vtkPiecewiseFunction> volumeGradientOpacity;
 	vtkSmartPointer<vtkVolume> volume;
+
+	vtkSmartPointer<vtkImageData> origin_data;
 
 	int volume_port;
 };
