@@ -62,7 +62,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	//*******************menu****************
 	connect(ui->actionOpenDicoms, SIGNAL(triggered()), this, SLOT(onOpenDicomFolderSlot())); 
 	connect(ui->actionOpenNII, SIGNAL(triggered()), this, SLOT(onOpenDiiFileSlot()));
-	connect(ui->actionShowHistory, SIGNAL(triggered()), this, SLOT(onAddDiiFileSlot()));
+
+
+	connect(ui->actionCacheVolume, SIGNAL(triggered()), this, SLOT(onCacheVolumeSlot()));
+	connect(ui->actionShowVolumes, SIGNAL(triggered()), this, SLOT(onShowVolumesSlot()));
+
 	connect(ui->actionBgColor, SIGNAL(triggered()), this, SLOT(onSetBgColorSlot()));
 
 	//set render style
@@ -621,63 +625,14 @@ void MainWindow::onOpenDiiFileSlot()
 	vrProcess->update();
 }
 
-void MainWindow::onAddDiiFileSlot()
+void MainWindow::onCacheVolumeSlot()
 {
-	vrProcess->addVolumeRenderFlow("");
-	vrProcess->update();
-	///*QString filter;
-	//filter = "NII file (*.nii)";
+	vrProcess->addNiiVolume();
+}
 
-	//QDir dir;
-	//QString fileName = QFileDialog::getOpenFileName(this, QString(tr("Open NII File")),
-	//	"C:\\Users\\13249\\Documents\\VTK_Related\\dataset", filter);
-	//if (fileName.isEmpty()) return;*/
-
-	////********************************************volume render********************************************
-	//ui->colortf_widget->setVisible(true);
-	//ui->opacitytf_widget->setVisible(true);
-
-	////build the render pipeline
-	//vrProcess->addVolumeRenderFlow("");
-
-	//double max_gv = vrProcess->getMaxGrayValue();
-	//double min_gv = vrProcess->getMinGrayValue();
-
-	//colorTf->setMaxKey(max_gv);
-	//colorTf->setMinKey(min_gv);
-	//opacityTf->setMaxKey(max_gv);
-	//opacityTf->setMinKey(min_gv);
-
-	////set initial color ang gray-opacity render style and draw initial tf
-	//colorTf->setBoneColorTf(vrProcess->getVolumeColorTf());
-	//opacityTf->setBoneOpacityTf(vrProcess->getVolumeOpacityTf());
-
-	//vrProcess->update();
-
-	////********************************************show dicoms series********************************************
-	////dicomSeriesReader->drawDicomSeries(folder_path);
-	//dicomVisualizer->setOriginData(vrProcess->getNiiReader()->GetOutput());
-	//dicomVisualizer->visualizeData();
-
-	//roiVisualizer->setOriginData(dicomVisualizer->getVisualData());
-	//roiVisualizer->visualizeData();
-
-	//boundVisualizer->setOriginData(roiVisualizer->getVisualData());
-	//boundVisualizer->visualizeData();
-
-	////set initial gradient-opactiy render style  and draw initial tf
-	//ui->gradienttf_widget->setVisible(true);
-	//double max_gradient = boundVisualizer->getMaxBoundGradientValue();
-	//double min_gradient = boundVisualizer->getMinBoundGradientValue();
-
-	//gradientTf->setMaxKey(max_gradient);
-	//gradientTf->setMinKey(min_gradient);
-
-	//map<double, double> init_gradient_tf;
-	//init_gradient_tf.insert(pair<double, double>(min_gradient, 1.0));
-	//init_gradient_tf.insert(pair<double, double>(max_gradient, 1.0));
-	//gradientTf->setCustomizedOpacityTf(vrProcess->getVolumeGradientTf(), init_gradient_tf);
-	//vrProcess->update();
+void MainWindow::onShowVolumesSlot()
+{
+	vrProcess->showAllVolumes();
 }
 
 

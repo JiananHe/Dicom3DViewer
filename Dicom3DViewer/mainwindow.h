@@ -46,7 +46,9 @@ private:
 private slots:
 	void onOpenDicomFolderSlot();
 	void onOpenDiiFileSlot();
-	void onAddDiiFileSlot();
+
+	void onCacheVolumeSlot();
+	void onShowVolumesSlot();
 	void onSetBgColorSlot();
 
 	void onSetBoneStyle();

@@ -1123,7 +1123,6 @@
       <string>Open Folder</string>
      </property>
      <addaction name="actionOpenDicoms"/>
-     <addaction name="actionOpenNiis"/>
     </widget>
     <widget class="QMenu" name="menuOpen_File">
      <property name="title">
@@ -1133,7 +1132,6 @@
     </widget>
     <addaction name="menuOpen"/>
     <addaction name="menuOpen_File"/>
-    <addaction name="actionShowHistory"/>
     <addaction name="menuSave_as"/>
    </widget>
    <widget class="QMenu" name="menuSetting">
@@ -1164,6 +1162,8 @@
     <property name="title">
      <string>编辑(&amp;E)</string>
     </property>
+    <addaction name="actionCacheVolume"/>
+    <addaction name="actionShowVolumes"/>
    </widget>
    <widget class="QMenu" name="menu_H">
     <property name="title">
@@ -1252,6 +1252,16 @@
   <action name="actionShowHistory">
    <property name="text">
     <string>Show History</string>
+   </property>
+  </action>
+  <action name="actionShowVolumes">
+   <property name="text">
+    <string>Show Volumes</string>
+   </property>
+  </action>
+  <action name="actionCacheVolume">
+   <property name="text">
+    <string>Cache Volume</string>
    </property>
   </action>
  </widget>

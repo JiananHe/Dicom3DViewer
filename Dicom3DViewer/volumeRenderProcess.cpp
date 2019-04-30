@@ -39,17 +39,18 @@ void VolumeRenderProcess::dicomsVolumeRenderFlow(QString folder_path)
 	volume_render = vtkSmartPointer<vtkRenderer>::New();
 	dicoms_reader->SetDirectoryName(folderName_str);
 	dicoms_reader->Update();
+	origin_data = dicoms_reader->GetOutput();
 
 	//get images dimension
 	int imageDims[3];
-	dicoms_reader->GetOutput()->GetDimensions(imageDims);
+	origin_data->GetDimensions(imageDims);
 	cout << "dimension[] :" << imageDims[0] << " " << imageDims[1] << " " << imageDims[2] << endl;
 	if (imageDims[0] == 0 || imageDims[1] == 0 || imageDims[2] == 0)
 		return;
 
 	//Mapper
 	vtkSmartPointer<vtkGPUVolumeRayCastMapper> RcGpuMapper = vtkSmartPointer<vtkGPUVolumeRayCastMapper>::New();
-	RcGpuMapper->SetInputConnection(dicoms_reader->GetOutputPort());
+	RcGpuMapper->SetInputData(origin_data);
 
 	//vtkVolumeProperty
 	volumeProperty->RemoveAllObservers();
@@ -109,17 +110,9 @@ void VolumeRenderProcess::niiVolumeRenderFlow(QString file_name)
 	else
 		origin_data = nii_reader->GetOutput();
 
-
-	vtkSmartPointer<vtkNIFTIImageReader> nii_reader1 = vtkSmartPointer<vtkNIFTIImageReader>::New();
-	nii_reader1->SetFileName(fileName_str);
-	nii_reader1->Update(); 
-	
-	multi_volume_mapper->SetInputConnection(volume_port, m->GetOutputPort());
-
 	//Mapper
 	vtkSmartPointer<vtkGPUVolumeRayCastMapper> RcGpuMapper = vtkSmartPointer<vtkGPUVolumeRayCastMapper>::New();
 	RcGpuMapper->SetInputData(origin_data);
-	
 
 	//vtkVolumeProperty
 	volumeProperty->RemoveAllObservers();
@@ -139,78 +132,64 @@ void VolumeRenderProcess::niiVolumeRenderFlow(QString file_name)
 	volume->SetProperty(volumeProperty);
 
 	multi_volume->SetVolume(volume, volume_port);
-	volume_port += 2;
+	multi_volume->Update();
 
 	//render
-	volume_render->AddViewProp(volume);
+	volume_render->AddVolume(volume);
 	my_vr_widget->GetRenderWindow()->AddRenderer(volume_render);
 	my_vr_widget->GetRenderWindow()->Render();
 }
 
-void VolumeRenderProcess::addVolumeRenderFlow(QString file_name)
+void VolumeRenderProcess::addNiiVolume()
 {
-	//QByteArray ba = file_name.toLocal8Bit();
-	//const char *fileName_str = ba.data();
+	//add data
+	vtkSmartPointer<vtkNIFTIImageReader> reader = vtkSmartPointer<vtkNIFTIImageReader>::New();
+	reader->SetFileName(nii_reader->GetFileName());
+	reader->Update();
 
-	////reader
-	////dicoms_reader = vtkSmartPointer<vtkDICOMImageReader>::New();
-	////nii_reader = vtkSmartPointer<vtkNIFTIImageReader>::New();
-	//if (volume_port == 0)
-	//{
-	//	nii_reader->SetFileName(fileName_str);
-	//	nii_reader->Update();
-	//}
-	//else if (volume_port == 2)
-	//{
-	//	nii_reader1->SetFileName(fileName_str);
-	//	nii_reader1->Update();
-	//}
-	//
+	double range[2];
+	reader->GetOutput()->GetScalarRange(range);
+	vtkSmartPointer<vtkImageMathematics> m = vtkSmartPointer<vtkImageMathematics>::New();
+	if (range[0] == 0 && range[1] == 1)
+	{
+		cout << "Binary data!!" << endl;
+		m->SetInput1Data(reader->GetOutput());
+		m->SetConstantK(255);
+		m->SetOperationToMultiplyByK();
+		m->Update();
+	}
 
-	////get images dimension
-	//int imageDims[3];
-	//if (volume_port == 0)
-	//{
-	//	nii_reader->GetOutput()->GetDimensions(imageDims);
-	//}
-	//else if (volume_port == 2)
-	//{
-	//	nii_reader1->GetOutput()->GetDimensions(imageDims);
-	//}
-	//cout << "dimension[] :" << imageDims[0] << " " << imageDims[1] << " " << imageDims[2] << endl;
-	//if (imageDims[0] == 0 || imageDims[1] == 0 || imageDims[2] == 0)
-	//	return;
+	multi_volume_mapper->SetInputConnection(volume_port, m->GetOutputPort());
 
-	////Mapper
-	//if (volume_port == 0)
-	//{
-	//	multi_volume_mapper->SetInputConnection(volume_port, nii_reader->GetOutputPort());
-	//}
-	//else if (volume_port == 2)
-	//{
-	//	multi_volume_mapper->SetInputConnection(volume_port, nii_reader1->GetOutputPort());
-	//}
+	//add volume property
+	vtkNew<vtkColorTransferFunction> ctf;
+	ctf->DeepCopy(volumeColor);
 
-	////vtkVolumeProperty
-	//volumeProperty->RemoveAllObservers();
-	//volumeProperty->SetInterpolationTypeToLinear();
-	//volumeProperty->ShadeOn();
-	//volumeProperty->SetAmbient(0.1);
-	//volumeProperty->SetDiffuse(0.9);
-	//volumeProperty->SetSpecular(0.2);
-	//volumeProperty->SetSpecularPower(10.0);
-	//volumeProperty->SetColor(volumeColor);
-	//volumeProperty->SetGradientOpacity(volumeGradientOpacity);
-	//volumeProperty->SetScalarOpacity(volumeScalarOpacity);
+	vtkNew<vtkPiecewiseFunction> pf;
+	pf->DeepCopy(volumeScalarOpacity);
 
-	////volume
-	//volume->SetProperty(volumeProperty);
-	//multi_volume->SetVolume(volume, volume_port);
+	vtkNew<vtkPiecewiseFunction> gf;
+	gf->DeepCopy(volumeGradientOpacity);
 
-	//render
+	vtkNew<vtkVolume> vol;
+	vol->GetProperty()->SetScalarOpacity(pf);
+	vol->GetProperty()->SetColor(ctf);
+	vol->GetProperty()->SetGradientOpacity(gf);
+	vol->GetProperty()->SetInterpolationType(VTK_LINEAR_INTERPOLATION);
+
+	multi_volume->SetVolume(vol, volume_port);
+	multi_volume->Update();
+	cout << "Cache this volume, its port is " << volume_port << endl;
+	volume_port += 2;
+}
+
+void VolumeRenderProcess::showAllVolumes()
+{
+	cout << "Show " << volume_port / 2 << " voulmes" << endl;
 	volume_render->AddVolume(multi_volume);
 	my_vr_widget->GetRenderWindow()->AddRenderer(volume_render);
 	my_vr_widget->GetRenderWindow()->Render();
+	my_vr_widget->update();
 }
 
 void VolumeRenderProcess::setBgColor(QColor color)
@@ -250,10 +229,7 @@ vtkImageData * VolumeRenderProcess::getNiiReaderOutput()
 double VolumeRenderProcess::getMinGrayValue()
 {
 	double range[2];
-	if (nii_reader->GetFileName() == NULL)
-		origin_data->GetScalarRange(range);
-	if (dicoms_reader->GetDirectoryName() == NULL)
-		origin_data->GetScalarRange(range);
+	origin_data->GetScalarRange(range);
 	
 	return range[0];
 }
@@ -261,10 +237,7 @@ double VolumeRenderProcess::getMinGrayValue()
 double VolumeRenderProcess::getMaxGrayValue()
 {
 	double range[2];
-	if (nii_reader->GetFileName() == NULL)
-		origin_data->GetScalarRange(range);
-	if (dicoms_reader->GetDirectoryName() == NULL)
-		origin_data->GetScalarRange(range);
+	origin_data->GetScalarRange(range);
 
 	return range[1];
 }

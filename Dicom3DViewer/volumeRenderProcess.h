@@ -29,7 +29,10 @@ public:
 	~VolumeRenderProcess();
 	void dicomsVolumeRenderFlow(QString );
 	void niiVolumeRenderFlow(QString );
-	void addVolumeRenderFlow(QString );
+
+	void addNiiVolume();
+	void showAllVolumes();
+
 	void setBgColor(QColor );
 
 	vtkColorTransferFunction* getVolumeColorTf();
@@ -61,6 +64,9 @@ private:
 	vtkSmartPointer<vtkColorTransferFunction> volumeColor;
 	vtkSmartPointer<vtkPiecewiseFunction> volumeScalarOpacity;
 	vtkSmartPointer<vtkPiecewiseFunction> volumeGradientOpacity;
+	/*vtkColorTransferFunction* volumeColor;
+	vtkPiecewiseFunction* volumeScalarOpacity;
+	vtkPiecewiseFunction* volumeGradientOpacity;*/
 	vtkSmartPointer<vtkVolume> volume;
 
 	vtkSmartPointer<vtkImageData> origin_data;
