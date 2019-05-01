@@ -567,6 +567,8 @@ void MainWindow::onOpenDicomFolderSlot()
 	init_gradient_tf.insert(pair<double, double>(max_gradient, 1.0));
 	gradientTf->setCustomizedOpacityTf(vrProcess->getVolumeGradientTf(), init_gradient_tf);
 	vrProcess->update();
+
+	niiOrDicom = 1;
 }
 
 
@@ -625,11 +627,16 @@ void MainWindow::onOpenDiiFileSlot()
 	init_gradient_tf.insert(pair<double, double>(max_gradient, 1.0));
 	gradientTf->setCustomizedOpacityTf(vrProcess->getVolumeGradientTf(), init_gradient_tf);
 	vrProcess->update();
+
+	niiOrDicom = 0;
 }
 
 void MainWindow::onCacheVolumeSlot()
 {
-	vrProcess->addNiiVolume();
+	if (niiOrDicom == 0)
+		vrProcess->addNiiVolume();
+	else
+		vrProcess->addDicomVolume();
 }
 
 void MainWindow::onShowVolumesSlot()

@@ -172,6 +172,59 @@ void VolumeRenderProcess::addNiiVolume()
 	gf->DeepCopy(volumeGradientOpacity);
 
 	vtkNew<vtkVolume> vol;
+	vol->GetProperty()->ShadeOn();
+	vol->GetProperty()->SetAmbient(0.1);
+	vol->GetProperty()->SetDiffuse(0.9);
+	vol->GetProperty()->SetSpecular(0.2);
+	vol->GetProperty()->SetSpecularPower(10.0);
+	vol->GetProperty()->SetScalarOpacity(pf);
+	vol->GetProperty()->SetColor(ctf);
+	vol->GetProperty()->SetGradientOpacity(gf);
+	vol->GetProperty()->SetInterpolationType(VTK_LINEAR_INTERPOLATION);
+
+	multi_volume->SetVolume(vol, volume_port);
+	multi_volume->Update();
+	cout << "Cache this volume, its port is " << volume_port << endl;
+	volume_port += 2;
+}
+
+void VolumeRenderProcess::addDicomVolume()
+{
+	//add data
+	vtkSmartPointer<vtkDICOMImageReader> reader = vtkSmartPointer<vtkDICOMImageReader>::New();
+	reader->SetDirectoryName(dicoms_reader->GetDirectoryName());
+	reader->Update();
+
+	/*double range[2];
+	reader->GetOutput()->GetScalarRange(range);
+	vtkSmartPointer<vtkImageMathematics> m = vtkSmartPointer<vtkImageMathematics>::New();
+	if (range[0] == 0 && range[1] == 1)
+	{
+		cout << "Binary data!!" << endl;
+		m->SetInput1Data(reader->GetOutput());
+		m->SetConstantK(255);
+		m->SetOperationToMultiplyByK();
+		m->Update();
+	}
+*/
+	multi_volume_mapper->SetInputConnection(volume_port, reader->GetOutputPort());
+
+	//add volume property
+	vtkNew<vtkColorTransferFunction> ctf;
+	ctf->DeepCopy(volumeColor);
+
+	vtkNew<vtkPiecewiseFunction> pf;
+	pf->DeepCopy(volumeScalarOpacity);
+
+	vtkNew<vtkPiecewiseFunction> gf;
+	gf->DeepCopy(volumeGradientOpacity);
+
+	vtkNew<vtkVolume> vol;
+	vol->GetProperty()->ShadeOn();
+	vol->GetProperty()->SetAmbient(0.1);
+	vol->GetProperty()->SetDiffuse(0.9);
+	vol->GetProperty()->SetSpecular(0.2);
+	vol->GetProperty()->SetSpecularPower(10.0);
 	vol->GetProperty()->SetScalarOpacity(pf);
 	vol->GetProperty()->SetColor(ctf);
 	vol->GetProperty()->SetGradientOpacity(gf);

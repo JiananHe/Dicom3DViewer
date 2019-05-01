@@ -31,6 +31,7 @@ public:
 	void niiVolumeRenderFlow(QString );
 
 	void addNiiVolume();
+	void addDicomVolume();
 	void showAllVolumes();
 
 	void setBgColor(QColor );
@@ -64,9 +65,6 @@ private:
 	vtkSmartPointer<vtkColorTransferFunction> volumeColor;
 	vtkSmartPointer<vtkPiecewiseFunction> volumeScalarOpacity;
 	vtkSmartPointer<vtkPiecewiseFunction> volumeGradientOpacity;
-	/*vtkColorTransferFunction* volumeColor;
-	vtkPiecewiseFunction* volumeScalarOpacity;
-	vtkPiecewiseFunction* volumeGradientOpacity;*/
 	vtkSmartPointer<vtkVolume> volume;
 
 	vtkSmartPointer<vtkImageData> origin_data;

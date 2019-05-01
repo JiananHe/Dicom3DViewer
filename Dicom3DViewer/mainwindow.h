@@ -39,6 +39,8 @@ private:
 	DicomVisualizer * dicomVisualizer;
 	RoiVisualizer * roiVisualizer;
 	BoundVisualizer * boundVisualizer;
+
+	int niiOrDicom; // 0 for nii, 1 for dicom
 	//DicomSeriesReader * dicomSeriesReader;
 	//BoundVisualizer * boundVisualizer;
 	
