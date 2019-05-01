@@ -16,6 +16,9 @@ public:
 
 	void setBoneColorTf(vtkColorTransferFunction *);
 	void setBone2ColorTf(vtkColorTransferFunction *);
+	void setSkinColorTf(vtkColorTransferFunction *);
+	void setMuscleColorTf(vtkColorTransferFunction *);
+
 	void updateVolumeColor(vtkColorTransferFunction *);
 
 	void showTfDiagram();

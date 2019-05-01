@@ -16,10 +16,13 @@ public:
 
 	void setBoneOpacityTf(vtkPiecewiseFunction *);
 	void setBone2OpacityTf(vtkPiecewiseFunction *);
+	void setSkinOpacityTf(vtkPiecewiseFunction *);
+	void setMuscleOpacityTf(vtkPiecewiseFunction *);
+
+	void setCustomizedOpacityTf(vtkPiecewiseFunction *, map<double, double>);
 	void updateVolumeOpacity(vtkPiecewiseFunction *);
 
 
-	void setCustomizedOpacityTf(vtkPiecewiseFunction *, map<double, double>);
 
 	void showTfDiagram();
 	void showCurBpValue();

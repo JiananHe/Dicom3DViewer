@@ -72,6 +72,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	//set render style
 	connect(ui->actionBoneStyle, SIGNAL(triggered()), this, SLOT(onSetBoneStyle()));
 	connect(ui->actionBone2Style, SIGNAL(triggered()), this, SLOT(onSetBone2Style()));
+	connect(ui->actionSkinStyle, SIGNAL(triggered()), this, SLOT(onSetSkinStyle()));
+	connect(ui->actionMuscleStyle, SIGNAL(triggered()), this, SLOT(onSetMuscleStyle()));
 
 	//set mapper
 	connect(ui->actionRayCastMapper, SIGNAL(triggered()), this, SLOT(onSetRayCastMapper()));
@@ -647,6 +649,20 @@ void MainWindow::onSetBone2Style()
 {
 	colorTf->setBone2ColorTf(vrProcess->getVolumeColorTf());
 	opacityTf->setBone2OpacityTf(vrProcess->getVolumeOpacityTf());
+	vrProcess->update();
+}
+
+void MainWindow::onSetSkinStyle()
+{
+	colorTf->setSkinColorTf(vrProcess->getVolumeColorTf());
+	opacityTf->setSkinOpacityTf(vrProcess->getVolumeOpacityTf());
+	vrProcess->update();
+}
+
+void MainWindow::onSetMuscleStyle()
+{
+	colorTf->setMuscleColorTf(vrProcess->getVolumeColorTf());
+	opacityTf->setMuscleOpacityTf(vrProcess->getVolumeOpacityTf());
 	vrProcess->update();
 }
 

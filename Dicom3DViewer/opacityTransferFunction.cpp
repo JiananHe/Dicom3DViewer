@@ -62,6 +62,47 @@ void OpacityTransferFunctioin::setBone2OpacityTf(vtkPiecewiseFunction * volumeOp
 	showTfBpInfoAt(0);
 }
 
+void OpacityTransferFunctioin::setSkinOpacityTf(vtkPiecewiseFunction * volumeOpacity)
+{
+	//skin
+	int max_point = 3071 > max_key ? max_key : 3071;
+	int min_point = -3024 < min_key ? min_key : -3024;
+
+	tf_bps->removeAllPoints();
+	tf_bps->insertBreakPoint(min_point, 0.0);
+	tf_bps->insertBreakPoint(-1000, 0.0);
+	tf_bps->insertBreakPoint(-500, 1.0);
+	tf_bps->insertBreakPoint(max_point, 1.0);
+
+	updateVolumeOpacity(volumeOpacity);
+
+	//show info of the first opacity bp
+	tf_scrollBar->setValue(0);
+	cur_bp_idx = 0;
+	showTfBpInfoAt(0);
+}
+
+void OpacityTransferFunctioin::setMuscleOpacityTf(vtkPiecewiseFunction * volumeOpacity)
+{
+	//muscle
+	int max_point = 3071 > max_key ? max_key : 3071;
+	int min_point = -3024 < min_key ? min_key : -3024;
+
+	tf_bps->removeAllPoints();
+	tf_bps->insertBreakPoint(min_point, 0.0);
+	tf_bps->insertBreakPoint(-155, 0.0);
+	tf_bps->insertBreakPoint(217, 0.68);
+	tf_bps->insertBreakPoint(420, 0.83);
+	tf_bps->insertBreakPoint(max_point, 0.80);
+
+	updateVolumeOpacity(volumeOpacity);
+
+	//show info of the first opacity bp
+	tf_scrollBar->setValue(0);
+	cur_bp_idx = 0;
+	showTfBpInfoAt(0);
+}
+
 void OpacityTransferFunctioin::setCustomizedOpacityTf(vtkPiecewiseFunction * volumeOpacity, map<double, double> my_tf_bps)
 {
 	tf_bps->removeAllPoints();

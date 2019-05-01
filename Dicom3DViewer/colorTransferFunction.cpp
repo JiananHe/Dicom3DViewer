@@ -62,6 +62,47 @@ void ColorTransferFunction::setBone2ColorTf(vtkColorTransferFunction* volumeColo
 	showTfBpInfoAt(0);
 }
 
+void ColorTransferFunction::setSkinColorTf(vtkColorTransferFunction * volumeColor)
+{
+	//skin
+	int max_point = 3071 > max_key ? max_key : 3071;
+	int min_point = -3024 < min_key ? min_key : -3024;
+
+	tf_bps->removeAllPoints();
+	tf_bps->insertBreakPoint(min_point, MyQColor(QColor(0, 0, 0)));
+	tf_bps->insertBreakPoint(-1000, MyQColor(QColor(158, 92, 46)));
+	tf_bps->insertBreakPoint(-500, MyQColor(QColor(224, 153, 74)));
+	tf_bps->insertBreakPoint(max_point, MyQColor(QColor(212, 168, 255)));
+
+	updateVolumeColor(volumeColor);
+
+	//show info of the first color bp 
+	tf_scrollBar->setValue(0);
+	cur_bp_idx = 0;
+	showTfBpInfoAt(0);
+}
+
+void ColorTransferFunction::setMuscleColorTf(vtkColorTransferFunction * volumeColor)
+{
+	//muscle
+	int max_point = 3071 > max_key ? max_key : 3071;
+	int min_point = -3024 < min_key ? min_key : -3024;
+
+	tf_bps->removeAllPoints();
+	tf_bps->insertBreakPoint(min_point, MyQColor(QColor(0, 0, 0)));
+	tf_bps->insertBreakPoint(-155, MyQColor(QColor(140, 64, 38)));
+	tf_bps->insertBreakPoint(420, MyQColor(QColor(255, 240, 242)));
+	tf_bps->insertBreakPoint(217, MyQColor(QColor(224, 153, 74)));
+	tf_bps->insertBreakPoint(max_point, MyQColor(QColor(212, 168, 255)));
+
+	updateVolumeColor(volumeColor);
+
+	//show info of the first color bp 
+	tf_scrollBar->setValue(0);
+	cur_bp_idx = 0;
+	showTfBpInfoAt(0);
+}
+
 void ColorTransferFunction::updateVolumeColor(vtkColorTransferFunction * volumeColor)
 {
 	volumeColor->RemoveAllPoints();

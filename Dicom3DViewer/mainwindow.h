@@ -53,6 +53,8 @@ private slots:
 
 	void onSetBoneStyle();
 	void onSetBone2Style();
+	void onSetSkinStyle();
+	void onSetMuscleStyle();
 
 	void onSetSmartMapper();
 	void onSetRayCastMapper();
