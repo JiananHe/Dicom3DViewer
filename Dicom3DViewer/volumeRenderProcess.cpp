@@ -18,6 +18,7 @@ VolumeRenderProcess::VolumeRenderProcess(QVTKWidget * qvtk_widget)
 	multi_volume = vtkSmartPointer<vtkMultiVolume>::New();
 	multi_volume_mapper = vtkSmartPointer<vtkGPUVolumeRayCastMapper>::New();
 	multi_volume->SetMapper(multi_volume_mapper);
+	multi_volume_mapper->SetUseJittering(0);
 
 	origin_data = vtkSmartPointer<vtkImageData>::New();
 
@@ -191,9 +192,9 @@ void VolumeRenderProcess::addNiiVolume()
 void VolumeRenderProcess::addDicomVolume()
 {
 	//add data
-	vtkSmartPointer<vtkDICOMImageReader> reader = vtkSmartPointer<vtkDICOMImageReader>::New();
+	/*vtkSmartPointer<vtkDICOMImageReader> reader = vtkSmartPointer<vtkDICOMImageReader>::New();
 	reader->SetDirectoryName(dicoms_reader->GetDirectoryName());
-	reader->Update();
+	reader->Update();*/
 
 	/*double range[2];
 	reader->GetOutput()->GetScalarRange(range);
@@ -207,7 +208,7 @@ void VolumeRenderProcess::addDicomVolume()
 		m->Update();
 	}
 */
-	multi_volume_mapper->SetInputConnection(volume_port, reader->GetOutputPort());
+	multi_volume_mapper->SetInputConnection(volume_port, dicoms_reader->GetOutputPort());
 
 	//add volume property
 	vtkNew<vtkColorTransferFunction> ctf;
