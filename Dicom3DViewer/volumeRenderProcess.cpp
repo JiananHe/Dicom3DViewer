@@ -158,9 +158,13 @@ void VolumeRenderProcess::addNiiVolume()
 		m->SetConstantK(255);
 		m->SetOperationToMultiplyByK();
 		m->Update();
+		multi_volume_mapper->SetInputConnection(volume_port, m->GetOutputPort());
+	}
+	else
+	{
+		multi_volume_mapper->SetInputConnection(volume_port, reader->GetOutputPort());
 	}
 
-	multi_volume_mapper->SetInputConnection(volume_port, m->GetOutputPort());
 
 	//add volume property
 	vtkNew<vtkColorTransferFunction> ctf;

@@ -407,7 +407,7 @@
      <property name="geometry">
       <rect>
        <x>270</x>
-       <y>20</y>
+       <y>60</y>
        <width>93</width>
        <height>41</height>
       </rect>
@@ -539,7 +539,7 @@
       <property name="geometry">
        <rect>
         <x>260</x>
-        <y>10</y>
+        <y>30</y>
         <width>93</width>
         <height>41</height>
        </rect>
@@ -561,32 +561,6 @@
        <string>边缘检测</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="roiBound_render_button_2">
-      <property name="geometry">
-       <rect>
-        <x>260</x>
-        <y>50</y>
-        <width>93</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>边界增量绘制</string>
-      </property>
-     </widget>
-    </widget>
-    <widget class="QPushButton" name="roi_render_button_2">
-     <property name="geometry">
-      <rect>
-       <x>270</x>
-       <y>60</y>
-       <width>93</width>
-       <height>41</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>ROI增量绘制</string>
-     </property>
     </widget>
    </widget>
    <widget class="QWidget" name="gradienttf_widget" native="true">

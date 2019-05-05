@@ -55,9 +55,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	//roi button
 	connect(ui->roi_render_button, SIGNAL(released()), this, SLOT(onRoiRenderSlot()));
-	connect(ui->roi_render_button_2, SIGNAL(released()), this, SLOT(onRoiIncreaseRenderSlot()));
+	//connect(ui->roi_render_button_2, SIGNAL(released()), this, SLOT(onRoiIncreaseRenderSlot()));
 	connect(ui->roiBound_render_button, SIGNAL(released()), this, SLOT(onRoiBoundRenderSlot()));
-	connect(ui->roiBound_render_button_2, SIGNAL(released()), this, SLOT(onRoiBoundIncreaseRenderSlot()));
+	//connect(ui->roiBound_render_button_2, SIGNAL(released()), this, SLOT(onRoiBoundIncreaseRenderSlot()));
 
 	//*******************menu****************
 	connect(ui->actionOpenDicoms, SIGNAL(triggered()), this, SLOT(onOpenDicomFolderSlot())); 
@@ -363,16 +363,19 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 
 void MainWindow::onShowColorBpInfoAt(int idx)
 {
+	ui->colortf_bar->setFocus();
 	colorTf->showTfBpInfoAt(idx);
 }
 
 void MainWindow::onShowOpacityBpInfoAt(int idx)
 {
+	ui->opacitytf_bar->setFocus();
 	opacityTf->showTfBpInfoAt(idx);
 }
 
 void MainWindow::onShowGradientBpInfoAt(int idx)
 {
+	ui->gradienttf_bar->setFocus();
 	gradientTf->showTfBpInfoAt(idx);
 }
 

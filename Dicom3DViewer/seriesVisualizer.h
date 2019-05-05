@@ -9,6 +9,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkImageData.h>
 #include <vtkImageThreshold.h>
+#include <vtkImageShiftScale.h>
 #include <vtkImageCast.h>
 #include <vtkImageViewer2.h>
 #include <vtkImageActor.h>

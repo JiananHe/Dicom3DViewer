@@ -4,6 +4,7 @@ RoiVisualizer::RoiVisualizer(QFrame * vtk_frame, QString name, QFrame * slider_f
 	SeriesVisualizer(vtk_frame, name, slider_frame)
 {
 	roi_thresh = vtkSmartPointer<vtkImageThreshold>::New();
+	roi_ss = vtkSmartPointer<vtkImageShiftScale>::New();
 	roi_range_slider = vtk_frame->findChild<RangeSlider*>("roi_range_slider");
 	roi_min_label = vtk_frame->findChild<QLabel*>("roi_min_label");
 	roi_max_label = vtk_frame->findChild<QLabel*>("roi_max_label");
@@ -44,11 +45,14 @@ bool RoiVisualizer::setRoiGrayRange(float rMin, float rMax)
 
 void RoiVisualizer::updateVisualData()
 {
-	roi_thresh->ThresholdBetween(roi_min, roi_max);
+	roi_thresh->ThresholdBetween(roi_min, roi_max);	
+	roi_thresh->SetReplaceOut(roi_min);
+
 	roi_thresh->Update();
+	roi_ss->Update();
 
 	vtkSmartPointer<vtkImageCast> ic = vtkSmartPointer< vtkImageCast>::New();
-	ic->SetInputData(roi_thresh->GetOutput());
+	ic->SetInputConnection(roi_ss->GetOutputPort());
 	ic->SetOutputScalarTypeToFloat();
 	ic->Update();
 
@@ -81,11 +85,16 @@ void RoiVisualizer::transferData()
 	roi_thresh->ThresholdBetween(roi_min, roi_max);
 	roi_thresh->ReplaceInOff();
 	roi_thresh->ReplaceOutOn();
-	roi_thresh->SetReplaceOut(range[0]);
+	roi_thresh->SetReplaceOut(roi_min);
 	roi_thresh->Update();
 
+	//shift and scale to 0 - 255
+	roi_ss->SetInputConnection(roi_thresh->GetOutputPort());
+	roi_ss->SetShift(-roi_min);
+	roi_ss->SetScale(255.0 / (roi_max - roi_min));
+
 	vtkSmartPointer<vtkImageCast> ic = vtkSmartPointer< vtkImageCast>::New();
-	ic->SetInputData(roi_thresh->GetOutput());
+	ic->SetInputConnection(roi_ss->GetOutputPort());
 	ic->SetOutputScalarTypeToFloat();
 	ic->Update();
 
