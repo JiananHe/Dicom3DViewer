@@ -32,6 +32,7 @@ public:
 
 	void addVolume();
 	void showAllVolumes();
+	void clearVolumesCache();
 
 	void setBgColor(QColor );
 

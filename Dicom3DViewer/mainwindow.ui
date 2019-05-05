@@ -64,6 +64,9 @@
        <height>31</height>
       </rect>
      </property>
+     <property name="focusPolicy">
+      <enum>Qt::NoFocus</enum>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -1138,6 +1141,7 @@
     </property>
     <addaction name="actionCacheVolume"/>
     <addaction name="actionShowVolumes"/>
+    <addaction name="actionClearCache"/>
    </widget>
    <widget class="QMenu" name="menu_H">
     <property name="title">
@@ -1236,6 +1240,11 @@
   <action name="actionCacheVolume">
    <property name="text">
     <string>Cache Volume</string>
+   </property>
+  </action>
+  <action name="actionClearCache">
+   <property name="text">
+    <string>Clear Cache</string>
    </property>
   </action>
  </widget>

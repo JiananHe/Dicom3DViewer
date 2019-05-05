@@ -169,6 +169,14 @@ void VolumeRenderProcess::showAllVolumes()
 	my_vr_widget->update();
 }
 
+void VolumeRenderProcess::clearVolumesCache()
+{
+	/*multi_volume_render = vtkSmartPointer<vtkRenderer>::New();
+	my_vr_widget->GetRenderWindow()->AddRenderer(multi_volume_render);
+	my_vr_widget->GetRenderWindow()->Render();
+	my_vr_widget->update();*/
+}
+
 void VolumeRenderProcess::setBgColor(QColor color)
 {
 	vtkSmartPointer<vtkNamedColors> bg_color = vtkSmartPointer<vtkNamedColors>::New();
@@ -263,6 +271,7 @@ void VolumeRenderProcess::saveAsSTL()
 void VolumeRenderProcess::update()
 {
 	volume_render->ResetCamera();
+	my_vr_widget->GetRenderWindow()->AddRenderer(volume_render);
 	my_vr_widget->GetRenderWindow()->Render();
 	my_vr_widget->update();
 }

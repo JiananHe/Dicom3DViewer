@@ -20,6 +20,7 @@ private:
 	float roi_min;
 	float roi_max; 
 	vtkSmartPointer<vtkImageThreshold> roi_thresh;
+	vtkSmartPointer<vtkImageShiftScale> roi_ss;
 
 	RangeSlider * roi_range_slider;
 	QLabel * roi_min_label;

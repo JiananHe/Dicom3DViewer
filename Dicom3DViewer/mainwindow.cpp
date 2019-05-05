@@ -64,8 +64,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(ui->actionOpenNII, SIGNAL(triggered()), this, SLOT(onOpenDiiFileSlot()));
 
 
-	connect(ui->actionCacheVolume, SIGNAL(triggered()), this, SLOT(onCacheVolumeSlot()));
+	connect(ui->actionCacheVolume, SIGNAL(triggered()), this, SLOT(onCacheVolumeSlot())); 
 	connect(ui->actionShowVolumes, SIGNAL(triggered()), this, SLOT(onShowVolumesSlot()));
+	connect(ui->actionClearCache, SIGNAL(triggered()), this, SLOT(onClearCacheSlot()));
 
 	connect(ui->actionBgColor, SIGNAL(triggered()), this, SLOT(onSetBgColorSlot()));
 
@@ -363,16 +364,19 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 
 void MainWindow::onShowColorBpInfoAt(int idx)
 {
+	ui->colortf_bar->setFocus();
 	colorTf->showTfBpInfoAt(idx);
 }
 
 void MainWindow::onShowOpacityBpInfoAt(int idx)
 {
+	ui->opacitytf_bar->setFocus();
 	opacityTf->showTfBpInfoAt(idx);
 }
 
 void MainWindow::onShowGradientBpInfoAt(int idx)
 {
+	ui->gradienttf_bar->setFocus();
 	gradientTf->showTfBpInfoAt(idx);
 }
 
@@ -639,6 +643,11 @@ void MainWindow::onCacheVolumeSlot()
 void MainWindow::onShowVolumesSlot()
 {
 	vrProcess->showAllVolumes();
+}
+
+void MainWindow::onClearCacheSlot()
+{
+	vrProcess->clearVolumesCache();
 }
 
 

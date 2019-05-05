@@ -51,6 +51,8 @@ private slots:
 
 	void onCacheVolumeSlot();
 	void onShowVolumesSlot();
+	void onClearCacheSlot();
+
 	void onSetBgColorSlot();
 
 	void onSetBoneStyle();
