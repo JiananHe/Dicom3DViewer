@@ -55,9 +55,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	//roi button
 	connect(ui->roi_render_button, SIGNAL(released()), this, SLOT(onRoiRenderSlot()));
-	connect(ui->roi_render_button_2, SIGNAL(released()), this, SLOT(onRoiIncreaseRenderSlot()));
+	//connect(ui->roi_render_button_2, SIGNAL(released()), this, SLOT(onRoiIncreaseRenderSlot()));
 	connect(ui->roiBound_render_button, SIGNAL(released()), this, SLOT(onRoiBoundRenderSlot()));
-	connect(ui->roiBound_render_button_2, SIGNAL(released()), this, SLOT(onRoiBoundIncreaseRenderSlot()));
+	//connect(ui->roiBound_render_button_2, SIGNAL(released()), this, SLOT(onRoiBoundIncreaseRenderSlot()));
 
 	//*******************menu****************
 	connect(ui->actionOpenDicoms, SIGNAL(triggered()), this, SLOT(onOpenDicomFolderSlot())); 
@@ -633,10 +633,7 @@ void MainWindow::onOpenDiiFileSlot()
 
 void MainWindow::onCacheVolumeSlot()
 {
-	if (niiOrDicom == 0)
-		vrProcess->addNiiVolume();
-	else
-		vrProcess->addDicomVolume();
+	vrProcess->addVolume();
 }
 
 void MainWindow::onShowVolumesSlot()

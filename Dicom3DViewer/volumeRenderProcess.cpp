@@ -8,6 +8,7 @@ VolumeRenderProcess::VolumeRenderProcess(QVTKWidget * qvtk_widget)
 	nii_reader = vtkSmartPointer<vtkNIFTIImageReader>::New();
 	
 	volume_render = vtkSmartPointer<vtkRenderer>::New();
+	multi_volume_render = vtkSmartPointer<vtkRenderer>::New();
 
 	volumeProperty = vtkSmartPointer<vtkVolumeProperty>::New();
 	volumeColor = vtkSmartPointer<vtkColorTransferFunction>::New();
@@ -139,109 +140,31 @@ void VolumeRenderProcess::niiVolumeRenderFlow(QString file_name)
 	volume_render->AddVolume(volume);
 	my_vr_widget->GetRenderWindow()->AddRenderer(volume_render);
 	my_vr_widget->GetRenderWindow()->Render();
+	my_vr_widget->update();
 }
 
-void VolumeRenderProcess::addNiiVolume()
+void VolumeRenderProcess::addVolume()
 {
-	//add data
-	vtkSmartPointer<vtkNIFTIImageReader> reader = vtkSmartPointer<vtkNIFTIImageReader>::New();
-	reader->SetFileName(nii_reader->GetFileName());
-	reader->Update();
+	vtkSmartPointer<vtkGPUVolumeRayCastMapper> mapper = vtkSmartPointer<vtkGPUVolumeRayCastMapper>::New();
+	mapper->SetInputData(origin_data);
 
-	double range[2];
-	reader->GetOutput()->GetScalarRange(range);
-	vtkSmartPointer<vtkImageMathematics> m = vtkSmartPointer<vtkImageMathematics>::New();
-	if (range[0] == 0 && range[1] == 1)
-	{
-		cout << "Binary data!!" << endl;
-		m->SetInput1Data(reader->GetOutput());
-		m->SetConstantK(255);
-		m->SetOperationToMultiplyByK();
-		m->Update();
-	}
+	vtkSmartPointer<vtkVolumeProperty> prop = vtkSmartPointer<vtkVolumeProperty>::New();
+	prop->DeepCopy(volumeProperty);
 
-	multi_volume_mapper->SetInputConnection(volume_port, m->GetOutputPort());
+	vtkSmartPointer<vtkVolume> vol = vtkSmartPointer<vtkVolume>::New();
+	vol->SetProperty(prop);
+	vol->SetMapper(mapper);
 
-	//add volume property
-	vtkNew<vtkColorTransferFunction> ctf;
-	ctf->DeepCopy(volumeColor);
-
-	vtkNew<vtkPiecewiseFunction> pf;
-	pf->DeepCopy(volumeScalarOpacity);
-
-	vtkNew<vtkPiecewiseFunction> gf;
-	gf->DeepCopy(volumeGradientOpacity);
-
-	vtkNew<vtkVolume> vol;
-	vol->GetProperty()->ShadeOn();
-	vol->GetProperty()->SetAmbient(0.1);
-	vol->GetProperty()->SetDiffuse(0.9);
-	vol->GetProperty()->SetSpecular(0.2);
-	vol->GetProperty()->SetSpecularPower(10.0);
-	vol->GetProperty()->SetScalarOpacity(pf);
-	vol->GetProperty()->SetColor(ctf);
-	vol->GetProperty()->SetGradientOpacity(gf);
-	vol->GetProperty()->SetInterpolationType(VTK_LINEAR_INTERPOLATION);
-
-	multi_volume->SetVolume(vol, volume_port);
-	multi_volume->Update();
-	cout << "Cache this volume, its port is " << volume_port << endl;
-	volume_port += 2;
-}
-
-void VolumeRenderProcess::addDicomVolume()
-{
-	//add data
-	/*vtkSmartPointer<vtkDICOMImageReader> reader = vtkSmartPointer<vtkDICOMImageReader>::New();
-	reader->SetDirectoryName(dicoms_reader->GetDirectoryName());
-	reader->Update();*/
-
-	/*double range[2];
-	reader->GetOutput()->GetScalarRange(range);
-	vtkSmartPointer<vtkImageMathematics> m = vtkSmartPointer<vtkImageMathematics>::New();
-	if (range[0] == 0 && range[1] == 1)
-	{
-		cout << "Binary data!!" << endl;
-		m->SetInput1Data(reader->GetOutput());
-		m->SetConstantK(255);
-		m->SetOperationToMultiplyByK();
-		m->Update();
-	}
-*/
-	multi_volume_mapper->SetInputConnection(volume_port, dicoms_reader->GetOutputPort());
-
-	//add volume property
-	vtkNew<vtkColorTransferFunction> ctf;
-	ctf->DeepCopy(volumeColor);
-
-	vtkNew<vtkPiecewiseFunction> pf;
-	pf->DeepCopy(volumeScalarOpacity);
-
-	vtkNew<vtkPiecewiseFunction> gf;
-	gf->DeepCopy(volumeGradientOpacity);
-
-	vtkNew<vtkVolume> vol;
-	vol->GetProperty()->ShadeOn();
-	vol->GetProperty()->SetAmbient(0.1);
-	vol->GetProperty()->SetDiffuse(0.9);
-	vol->GetProperty()->SetSpecular(0.2);
-	vol->GetProperty()->SetSpecularPower(10.0);
-	vol->GetProperty()->SetScalarOpacity(pf);
-	vol->GetProperty()->SetColor(ctf);
-	vol->GetProperty()->SetGradientOpacity(gf);
-	vol->GetProperty()->SetInterpolationType(VTK_LINEAR_INTERPOLATION);
-
-	multi_volume->SetVolume(vol, volume_port);
-	multi_volume->Update();
-	cout << "Cache this volume, its port is " << volume_port << endl;
-	volume_port += 2;
+	multi_volume_render->ResetCamera();
+	multi_volume_render->AddVolume(vol);
+	cout << "Add one volume." << endl;
 }
 
 void VolumeRenderProcess::showAllVolumes()
 {
-	cout << "Show " << volume_port / 2 << " voulmes" << endl;
-	volume_render->AddVolume(multi_volume);
-	my_vr_widget->GetRenderWindow()->AddRenderer(volume_render);
+	cout << "Show all voulmes" << endl;
+
+	my_vr_widget->GetRenderWindow()->AddRenderer(multi_volume_render);
 	my_vr_widget->GetRenderWindow()->Render();
 	my_vr_widget->update();
 }

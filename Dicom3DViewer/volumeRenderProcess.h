@@ -30,8 +30,7 @@ public:
 	void dicomsVolumeRenderFlow(QString );
 	void niiVolumeRenderFlow(QString );
 
-	void addNiiVolume();
-	void addDicomVolume();
+	void addVolume();
 	void showAllVolumes();
 
 	void setBgColor(QColor );
@@ -56,7 +55,9 @@ private:
 	QVTKWidget* my_vr_widget;
 	vtkSmartPointer<vtkDICOMImageReader> dicoms_reader;
 	vtkSmartPointer< vtkNIFTIImageReader> nii_reader;
+
 	vtkSmartPointer<vtkRenderer> volume_render;
+	vtkSmartPointer<vtkRenderer> multi_volume_render;
 
 	vtkSmartPointer<vtkMultiVolume> multi_volume;
 	vtkSmartPointer<vtkGPUVolumeRayCastMapper> multi_volume_mapper;
