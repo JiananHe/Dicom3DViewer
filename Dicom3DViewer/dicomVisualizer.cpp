@@ -19,6 +19,7 @@ void DicomVisualizer::transferData()
 	ic->SetOutputScalarTypeToFloat();
 	ic->Update();
     
+	setTransferedData(ic->GetOutput());
 	setVisualData(ic->GetOutput());
 }
 

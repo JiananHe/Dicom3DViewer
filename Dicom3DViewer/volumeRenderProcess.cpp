@@ -236,6 +236,7 @@ void VolumeRenderProcess::addDicomVolume()
 	vol->GetProperty()->SetInterpolationType(VTK_LINEAR_INTERPOLATION);
 
 	multi_volume->SetVolume(vol, volume_port);
+	multi_volume->GetProperty()->ShadeOn();
 	multi_volume->Update();
 	cout << "Cache this volume, its port is " << volume_port << endl;
 	volume_port += 2;
@@ -244,6 +245,8 @@ void VolumeRenderProcess::addDicomVolume()
 void VolumeRenderProcess::showAllVolumes()
 {
 	cout << "Show " << volume_port / 2 << " voulmes" << endl;
+
+	multi_volume->GetProperty()->ShadeOn();
 	volume_render->AddVolume(multi_volume);
 	my_vr_widget->GetRenderWindow()->AddRenderer(volume_render);
 	my_vr_widget->GetRenderWindow()->Render();

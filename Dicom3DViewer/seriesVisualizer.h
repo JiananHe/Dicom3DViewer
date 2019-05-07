@@ -31,13 +31,15 @@ public:
 	~SeriesVisualizer();
 
 	void setOriginData(vtkSmartPointer<vtkImageData>);
-	void visualizeData();
-	void setVisualData(vtkSmartPointer<vtkImageData>);
+	vtkSmartPointer<vtkImageData> getOriginData();
 
 	virtual void transferData() = 0;
+	void setTransferedData(vtkSmartPointer<vtkImageData>);
+	vtkSmartPointer<vtkImageData> getTransferedData();
 
+	void visualizeData();
+	void setVisualData(vtkSmartPointer<vtkImageData>);
 	vtkSmartPointer<vtkImageData> getVisualData();
-	vtkSmartPointer<vtkImageData> getOriginData();
 	
 	void sliceMove(int);
 
@@ -52,6 +54,7 @@ protected:
 private:
 	vtkSmartPointer<vtkImageData> origin_data;
 	vtkSmartPointer<vtkImageData> visual_data;
+	vtkSmartPointer<vtkImageData> transfered_data;
 protected:
 	vtkSmartPointer<vtkImageViewer2> viewer;
 };
@@ -59,6 +62,7 @@ protected:
 inline SeriesVisualizer::SeriesVisualizer(QFrame * vtk_frame, QString name, QFrame * slider_frame)
 {
 	origin_data = vtkSmartPointer<vtkImageData>::New();
+	transfered_data = vtkSmartPointer<vtkImageData>::New();
 	visual_data = vtkSmartPointer<vtkImageData>::New();
 	viewer = vtkSmartPointer<vtkImageViewer2>::New();
 
@@ -107,6 +111,16 @@ inline vtkSmartPointer<vtkImageData> SeriesVisualizer::getVisualData()
 inline vtkSmartPointer<vtkImageData> SeriesVisualizer::getOriginData()
 {
 	return origin_data;
+}
+
+inline void SeriesVisualizer::setTransferedData(vtkSmartPointer<vtkImageData> input_data)
+{
+	transfered_data = input_data;
+}
+
+inline vtkSmartPointer<vtkImageData> SeriesVisualizer::getTransferedData()
+{
+	return transfered_data;
 }
 
 inline void SeriesVisualizer::sliceMove(int pos)

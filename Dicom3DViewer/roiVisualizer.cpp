@@ -45,18 +45,18 @@ bool RoiVisualizer::setRoiGrayRange(float rMin, float rMax)
 
 void RoiVisualizer::updateVisualData()
 {
-	roi_thresh->ThresholdBetween(roi_min, roi_max);	
+	roi_thresh->ThresholdBetween(roi_min, roi_max);
 	roi_thresh->SetReplaceOut(roi_min);
-
 	roi_thresh->Update();
-	roi_ss->Update();
 
 	vtkSmartPointer<vtkImageCast> ic = vtkSmartPointer< vtkImageCast>::New();
-	ic->SetInputConnection(roi_ss->GetOutputPort());
+	ic->SetInputConnection(roi_thresh->GetOutputPort());
 	ic->SetOutputScalarTypeToFloat();
 	ic->Update();
+	setTransferedData(ic->GetOutput());
 
-	setVisualData(ic->GetOutput());
+	roi_ss->Update();
+	setVisualData(roi_ss->GetOutput());
 
 	viewer->SetInputData(getVisualData());
 	int slice = viewer->GetSlice();
@@ -88,15 +88,16 @@ void RoiVisualizer::transferData()
 	roi_thresh->SetReplaceOut(roi_min);
 	roi_thresh->Update();
 
-	//shift and scale to 0 - 255
-	roi_ss->SetInputConnection(roi_thresh->GetOutputPort());
-	roi_ss->SetShift(-roi_min);
-	roi_ss->SetScale(255.0 / (roi_max - roi_min));
-
 	vtkSmartPointer<vtkImageCast> ic = vtkSmartPointer< vtkImageCast>::New();
-	ic->SetInputConnection(roi_ss->GetOutputPort());
+	ic->SetInputConnection(roi_thresh->GetOutputPort());
 	ic->SetOutputScalarTypeToFloat();
 	ic->Update();
+	setTransferedData(ic->GetOutput());
 
-	setVisualData(ic->GetOutput());
+	//shift and scale to 0 - 255 to visualize
+	roi_ss->SetInputConnection(ic->GetOutputPort());
+	roi_ss->SetShift(-roi_min);
+	roi_ss->SetScale(255.0 / (roi_max - roi_min));
+	roi_ss->Update();
+	setVisualData(roi_ss->GetOutput());
 }

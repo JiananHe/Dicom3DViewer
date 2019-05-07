@@ -410,7 +410,7 @@ void MainWindow::onRoiGrayMaxChangeSlot(int aMax)
 
 void MainWindow::onRoiToBoundSlot()
 {
-	boundVisualizer->setOriginData(roiVisualizer->getVisualData());
+	boundVisualizer->setOriginData(roiVisualizer->getTransferedData());
 	boundVisualizer->visualizeData();
 }
 
@@ -551,10 +551,10 @@ void MainWindow::onOpenDicomFolderSlot()
 	dicomVisualizer->setOriginData(vrProcess->getDicomReader()->GetOutput());
 	dicomVisualizer->visualizeData();
 
-	roiVisualizer->setOriginData(dicomVisualizer->getVisualData());
+	roiVisualizer->setOriginData(dicomVisualizer->getTransferedData());
 	roiVisualizer->visualizeData();
 
-	boundVisualizer->setOriginData(roiVisualizer->getVisualData());
+	boundVisualizer->setOriginData(roiVisualizer->getTransferedData());
 	boundVisualizer->visualizeData();
 
 	//set initial gradient-opactiy render style  and draw initial tf
@@ -611,10 +611,10 @@ void MainWindow::onOpenDiiFileSlot()
 	dicomVisualizer->setOriginData(vrProcess->getNiiReaderOutput());
 	dicomVisualizer->visualizeData();
 
-	roiVisualizer->setOriginData(dicomVisualizer->getVisualData());
+	roiVisualizer->setOriginData(dicomVisualizer->getTransferedData());
 	roiVisualizer->visualizeData();
 
-	boundVisualizer->setOriginData(roiVisualizer->getVisualData());
+	boundVisualizer->setOriginData(roiVisualizer->getTransferedData());
 	boundVisualizer->visualizeData();
 
 	//set initial gradient-opactiy render style  and draw initial tf
