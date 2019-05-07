@@ -21,6 +21,8 @@
 #include <vtkImageDataGeometryFilter.h>
 #include <vtkImageMathematics.h>
 #include <vtkImageShiftScale.h>
+#include <vtkOutlineFilter.h>
+#include <vtkPolyDataMapper.h>
 
 class VolumeRenderProcess : public QVTKWidget
 {

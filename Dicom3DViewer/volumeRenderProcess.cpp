@@ -148,6 +148,13 @@ void VolumeRenderProcess::addVolume()
 	vtkSmartPointer<vtkGPUVolumeRayCastMapper> mapper = vtkSmartPointer<vtkGPUVolumeRayCastMapper>::New();
 	mapper->SetInputData(origin_data);
 
+	vtkSmartPointer<vtkOutlineFilter> outline = vtkSmartPointer<vtkOutlineFilter>::New();
+	outline->SetInputData(origin_data);
+	vtkSmartPointer<vtkPolyDataMapper> poly_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+	poly_mapper->SetInputConnection(outline->GetOutputPort());
+	vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+	actor->SetMapper(poly_mapper);
+
 	vtkSmartPointer<vtkVolumeProperty> prop = vtkSmartPointer<vtkVolumeProperty>::New();
 	prop->DeepCopy(volumeProperty);
 
@@ -155,7 +162,7 @@ void VolumeRenderProcess::addVolume()
 	vol->SetProperty(prop);
 	vol->SetMapper(mapper);
 
-	multi_volume_render->ResetCamera();
+	multi_volume_render->AddActor(actor);
 	multi_volume_render->AddVolume(vol);
 	cout << "Add one volume." << endl;
 }
@@ -163,6 +170,8 @@ void VolumeRenderProcess::addVolume()
 void VolumeRenderProcess::showAllVolumes()
 {
 	cout << "Show all voulmes" << endl;
+	
+	//multi_volume_render->ResetCamera();
 
 	my_vr_widget->GetRenderWindow()->AddRenderer(multi_volume_render);
 	my_vr_widget->GetRenderWindow()->Render();
