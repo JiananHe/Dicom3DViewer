@@ -72,6 +72,7 @@ private slots:
 	void onBoundExtractionButton();
 	void onRoiGrayMinChangeSlot(int);
 	void onRoiGrayMaxChangeSlot(int);
+	void onKMeansSlot();
 
 	void onRoiToBoundSlot();
 	void onMagThreshChangeSlot(int);

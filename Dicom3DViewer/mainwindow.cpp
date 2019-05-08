@@ -49,6 +49,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(ui->roi_range_slider, SIGNAL(upperValueChanged(int)), this, SLOT(onRoiGrayMaxChangeSlot(int)));
 	
 	connect(ui->bound_extraction_button, SIGNAL(released()), this, SLOT(onRoiToBoundSlot()));
+	connect(ui->kmeans_button, SIGNAL(released()), this, SLOT(onKMeansSlot()));
 
 	//bound magnitude slider
 	connect(ui->magnitude_thresh_slider, SIGNAL(valueChanged(int)), this, SLOT(onMagThreshChangeSlot(int)));
@@ -406,6 +407,11 @@ void MainWindow::onRoiGrayMaxChangeSlot(int aMax)
 	ui->roi_maxGv_label->setText(QString::number(aMax));
 	if (roiVisualizer->setRoiGrayRange(roiVisualizer->getRoiRangeMin(), aMax))
 		roiVisualizer->updateVisualData();
+}
+
+void MainWindow::onKMeansSlot()
+{
+	roiVisualizer->kMeansCalc();
 }
 
 void MainWindow::onRoiToBoundSlot()

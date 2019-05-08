@@ -1,2 +1,3 @@
-待办：
-修复bug：
+multiple volumes render bug: (3D slicer中也存在这问题)
+1. 当使用vtkMultiVolume，shade无法打开，导致多个volumes存在时，绘制效果较差；
+2. 当直接在render中add多个volumes，显示的空间位置不正确，后添加的总是显示在前面。

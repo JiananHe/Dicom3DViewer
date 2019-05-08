@@ -74,6 +74,23 @@ float RoiVisualizer::getRoiRangeMax()
 	return roi_max;
 }
 
+void RoiVisualizer::kMeansCalc()
+{
+	vtkSmartPointer<vtkImageData> src_data = vtkSmartPointer<vtkImageData>::New();
+	src_data = getTransferedData();
+
+	vtkSmartPointer<vtkThresholdPoints> thresh = vtkSmartPointer<vtkThresholdPoints>::New();
+	thresh->SetInputData(src_data);
+	thresh->ThresholdBetween(roi_min, roi_max);
+	thresh->Update();
+	cout << "KMeans points: " << thresh->GetOutput()->GetNumberOfPoints() << endl;
+
+	vtkPointData * ele = thresh->GetOutput()->GetPointData();
+	vtkDataArray * ele_array = ele->GetScalars();
+	int num = ele_array->GetNumberOfTuples();
+	cout << "KMeans points: " << num << endl;
+}
+
 void RoiVisualizer::transferData()
 {
 	double range[2];

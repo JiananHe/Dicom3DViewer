@@ -1,6 +1,7 @@
 #pragma once
 #include "seriesVisualizer.h"
 #include "RangeSlider.h"
+#include <vtkThresholdPoints.h>
 
 class RoiVisualizer : public SeriesVisualizer
 {
@@ -16,6 +17,8 @@ public:
 
 	float getRoiRangeMin();
 	float getRoiRangeMax();
+
+	void kMeansCalc();
 private:
 	float roi_min;
 	float roi_max; 
