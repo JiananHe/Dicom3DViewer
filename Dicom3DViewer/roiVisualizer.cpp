@@ -82,6 +82,9 @@ void RoiVisualizer::kMeansCalc()
 	double gray_range[2];
 	gray_data->GetScalarRange(gray_range);
 
+	int dims[3];
+	gray_data->GetDimensions(dims);
+
 	/*vtkSmartPointer<vtkImageShiftScale> normal_gray_data = vtkSmartPointer<vtkImageShiftScale>::New();
 	normal_gray_data->SetInputData(gray_data);
 	normal_gray_data->SetShift(-gray_range[0]);
@@ -89,7 +92,7 @@ void RoiVisualizer::kMeansCalc()
 	normal_gray_data->Update();*/
 
 	//******************************* get roi poly data **************************
-	vtkSmartPointer<vtkThresholdPoints> gray_thresh = vtkSmartPointer<vtkThresholdPoints>::New();
+	/*vtkSmartPointer<vtkThresholdPoints> gray_thresh = vtkSmartPointer<vtkThresholdPoints>::New();
 	gray_thresh->ThresholdBetween(roi_min, roi_max);
 	gray_thresh->SetInputData(gray_data);
 	gray_thresh->Update();
@@ -107,7 +110,7 @@ void RoiVisualizer::kMeansCalc()
 	gray_thresh->GetOutput()->GetBounds(poly_bounds);
 	double spacing_x = (poly_bounds[1] - poly_bounds[0]) / (dims[0] - 1);
 	double spacing_y = (poly_bounds[3] - poly_bounds[2]) / (dims[1] - 1);
-	double spacing_z = (poly_bounds[5] - poly_bounds[4]) / (dims[2] - 1);
+	double spacing_z = (poly_bounds[5] - poly_bounds[4]) / (dims[2] - 1);*/
 
 	//******************calculate the magnitude ***************************
 	vtkSmartPointer<vtkImageGaussianSmooth> gs = vtkSmartPointer<vtkImageGaussianSmooth>::New();
@@ -140,25 +143,34 @@ void RoiVisualizer::kMeansCalc()
 	//******************get roi points gray and mag *********************
 	vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 	vtkSmartPointer<vtkMinimalStandardRandomSequence> sequence = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 5000; i++)
 	{
 		//map poly coords to data coords
-		int n = sequence->GetValue() * roi_counts;
+		int x = sequence->GetValue() * dims[0];
+		sequence->Next();
+		int y = sequence->GetValue() * dims[1];
+		sequence->Next();
+		int z = sequence->GetValue() * dims[2];
 		sequence->Next();
 
-		double poly_coords[3];
+		/*double poly_coords[3];
 		int data_coords[3];
 		gray_thresh->GetOutput()->GetPoint(n, poly_coords);
 		data_coords[0] = (poly_coords[0] - poly_bounds[0]) / spacing_x;
 		data_coords[1] = (poly_coords[1] - poly_bounds[2]) / spacing_y;
-		data_coords[2] = (poly_coords[2] - poly_bounds[4]) / spacing_z;
+		data_coords[2] = (poly_coords[2] - poly_bounds[4]) / spacing_z;*/
 
-		double * ele_gray = (double *)gray_data->GetScalarPointer(data_coords);
-		double * ele_mag = (double *)imgMagnitude->GetOutput()->GetScalarPointer(data_coords);
+		double * ele_gray = (double *)gray_data->GetScalarPointer(x, y, z);
+		if (*ele_gray < roi_min || *ele_gray > roi_max)
+		{
+			--i;
+			continue;
+		}
+		double * ele_mag = (double *)imgMagnitude->GetOutput()->GetScalarPointer(x, y, z);
 
 		//cout << (*ele_gray / 255.0) * (gray_range[1] - gray_range[0]) + gray_range[0] << " " << 
 			//(*ele_mag / 255.0) * (mag_range[1] - mag_range[0]) + mag_range[0] << endl;
-		cout << *ele_gray << " " << *ele_mag << endl;
+		//cout << *ele_gray << " " << *ele_mag << endl;
 
 		points->InsertNextPoint(*ele_gray, *ele_mag, 0.0);
 	}
@@ -219,9 +231,9 @@ void RoiVisualizer::kMeansCalc()
 
 	for (unsigned int i = 0; i < coord0->GetNumberOfTuples(); ++i)
 	{
-		double center_gv = coord0->GetValue(i) / 255.0 * (gray_range[1] - gray_range[0]) + gray_range[0];
-		double center_gd = coord1->GetValue(i) / 255.0 * (mag_range[1] - mag_range[0]) + mag_range[0];
-		cout << center_gv << " " << center_gd << " " << coord2->GetValue(i) << std::endl;
+		/*double center_gv = coord0->GetValue(i) / 255.0 * (gray_range[1] - gray_range[0]) + gray_range[0];
+		double center_gd = coord1->GetValue(i) / 255.0 * (mag_range[1] - mag_range[0]) + mag_range[0];*/
+		cout << coord0->GetValue(i) << " " << coord1->GetValue(i) << " " << coord2->GetValue(i) << std::endl;
 	}
 
 	// Display the results
