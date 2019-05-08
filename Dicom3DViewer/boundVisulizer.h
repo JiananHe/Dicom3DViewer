@@ -23,6 +23,7 @@ public:
 	float getMinBoundGradientValue();
 
 	map<double, double> getRoiBoundMagBp();
+	void kMeansCalc();
 	/*vector<int> getRoiBoundGvs();
 	vector<int> getRoiBoundGds();*/
 

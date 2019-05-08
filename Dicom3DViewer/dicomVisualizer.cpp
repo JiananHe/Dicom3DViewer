@@ -16,7 +16,7 @@ void DicomVisualizer::transferData()
 {
 	vtkSmartPointer<vtkImageCast> ic = vtkSmartPointer< vtkImageCast>::New();
 	ic->SetInputData(getOriginData());
-	ic->SetOutputScalarTypeToFloat();
+	ic->SetOutputScalarTypeToDouble();
 	ic->Update();
     
 	setTransferedData(ic->GetOutput());
@@ -103,7 +103,7 @@ vtkSmartPointer<vtkImageData> DicomVisualizer::getOriginMagnitudeData()
 
 	vtkSmartPointer<vtkImageCast> ic = vtkSmartPointer<vtkImageCast>::New();
 	ic->SetInputData(origin_mag->GetOutput());
-	ic->SetOutputScalarTypeToFloat();
+	ic->SetOutputScalarTypeToDouble();
 	ic->Update();
 
 	return ic->GetOutput();

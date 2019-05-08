@@ -123,7 +123,7 @@ void DicomSeriesReader::cannyEdgeExtraction()
 
 	//change scalar to float
 	ic = vtkSmartPointer<vtkImageCast>::New();
-	ic->SetOutputScalarTypeToFloat();
+	ic->SetOutputScalarTypeToDouble();
 	ic->SetInputData(imageData);
 	ic->Update();
 	cout << "Number of components: " << ic->GetOutput()->GetNumberOfScalarComponents() << endl;
@@ -478,7 +478,7 @@ void DicomSeriesReader::findROIBound()
 	cout << "imageGradientData com: " << imageGradientData->GetNumberOfScalarComponents() << endl;
 
 	vtkSmartPointer <vtkImageCast> ic1 = vtkSmartPointer<vtkImageCast>::New();
-	ic1->SetOutputScalarTypeToFloat();
+	ic1->SetOutputScalarTypeToDouble();
 	ic1->SetInputData(imageGradientData);
 	ic1->Update();
 	imageGradientData = ic1->GetOutput();

@@ -111,7 +111,7 @@ void BoundVisualizer::transferData()
 
 	vtkSmartPointer<vtkImageCast> ic = vtkSmartPointer< vtkImageCast>::New();
 	ic->SetInputData(nonMax->GetOutput());
-	ic->SetOutputScalarTypeToFloat();
+	ic->SetOutputScalarTypeToDouble();
 	ic->Update();
 	nonMaxFloat = ic->GetOutput();
 
@@ -240,4 +240,29 @@ map<double, double> BoundVisualizer::getRoiBoundMagBp()
 	roi_bound_gd.insert(pair<double, double>(mag + 1, 0.0));
 
 	return roi_bound_gd;
+}
+
+void BoundVisualizer::kMeansCalc()
+{
+	vtkSmartPointer<vtkImageData> gray_data = vtkSmartPointer<vtkImageData>::New();
+	gray_data = getOriginData();
+	double roi_gv_range[2];
+	gray_data->GetScalarRange(roi_gv_range);
+
+	vtkSmartPointer<vtkThresholdPoints> gray_thresh = vtkSmartPointer<vtkThresholdPoints>::New();
+	gray_thresh->SetInputData(gray_data);
+	gray_thresh->ThresholdBetween(roi_gv_range[0], roi_gv_range[1]);
+	gray_thresh->Update();
+	cout << "KMeans gray points: " << gray_thresh->GetOutput()->GetNumberOfPoints() << endl;
+	
+	vtkSmartPointer<vtkImageData> grad_data = vtkSmartPointer<vtkImageData>::New();
+	grad_data = imgMagnitude->GetOutput();
+	double roi_gd_range[2];
+	grad_data->GetScalarRange(roi_gd_range);
+
+	vtkSmartPointer<vtkThresholdPoints> grad_thresh = vtkSmartPointer<vtkThresholdPoints>::New();
+	grad_thresh->SetInputData(grad_data);
+	grad_thresh->ThresholdBetween(roi_gd_range[0], roi_gd_range[1]);
+	grad_thresh->Update();
+	cout << "KMeans grad points: " << grad_thresh->GetOutput()->GetNumberOfPoints() << endl;
 }

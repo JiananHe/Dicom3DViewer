@@ -51,7 +51,7 @@ void RoiVisualizer::updateVisualData()
 
 	vtkSmartPointer<vtkImageCast> ic = vtkSmartPointer< vtkImageCast>::New();
 	ic->SetInputConnection(roi_thresh->GetOutputPort());
-	ic->SetOutputScalarTypeToFloat();
+	ic->SetOutputScalarTypeToDouble();
 	ic->Update();
 	setTransferedData(ic->GetOutput());
 
@@ -76,19 +76,227 @@ float RoiVisualizer::getRoiRangeMax()
 
 void RoiVisualizer::kMeansCalc()
 {
-	vtkSmartPointer<vtkImageData> src_data = vtkSmartPointer<vtkImageData>::New();
-	src_data = getTransferedData();
 
-	vtkSmartPointer<vtkThresholdPoints> thresh = vtkSmartPointer<vtkThresholdPoints>::New();
-	thresh->SetInputData(src_data);
-	thresh->ThresholdBetween(roi_min, roi_max);
-	thresh->Update();
-	cout << "KMeans points: " << thresh->GetOutput()->GetNumberOfPoints() << endl;
+	vtkSmartPointer<vtkImageData> gray_data = vtkSmartPointer< vtkImageData>::New();
+	gray_data = getOriginData();
+	double gray_range[2];
+	gray_data->GetScalarRange(gray_range);
 
-	vtkPointData * ele = thresh->GetOutput()->GetPointData();
-	vtkDataArray * ele_array = ele->GetScalars();
-	int num = ele_array->GetNumberOfTuples();
-	cout << "KMeans points: " << num << endl;
+	/*vtkSmartPointer<vtkImageShiftScale> normal_gray_data = vtkSmartPointer<vtkImageShiftScale>::New();
+	normal_gray_data->SetInputData(gray_data);
+	normal_gray_data->SetShift(-gray_range[0]);
+	normal_gray_data->SetScale(255.0 / (gray_range[1] - gray_range[0]));
+	normal_gray_data->Update();*/
+
+	//******************************* get roi poly data **************************
+	vtkSmartPointer<vtkThresholdPoints> gray_thresh = vtkSmartPointer<vtkThresholdPoints>::New();
+	gray_thresh->ThresholdBetween(roi_min, roi_max);
+	gray_thresh->SetInputData(gray_data);
+	gray_thresh->Update();
+	int roi_counts = gray_thresh->GetOutput()->GetNumberOfPoints();
+	cout << "KMeans gray points: " << roi_counts << endl;
+
+	double thresh_range[2];
+	gray_thresh->GetOutput()->GetScalarRange(thresh_range);
+	cout << "thresh range: " << thresh_range[0] << " " << thresh_range[1] << endl;
+
+	int dims[3];
+	gray_data->GetDimensions(dims);
+
+	double poly_bounds[6];
+	gray_thresh->GetOutput()->GetBounds(poly_bounds);
+	double spacing_x = (poly_bounds[1] - poly_bounds[0]) / (dims[0] - 1);
+	double spacing_y = (poly_bounds[3] - poly_bounds[2]) / (dims[1] - 1);
+	double spacing_z = (poly_bounds[5] - poly_bounds[4]) / (dims[2] - 1);
+
+	//******************calculate the magnitude ***************************
+	vtkSmartPointer<vtkImageGaussianSmooth> gs = vtkSmartPointer<vtkImageGaussianSmooth>::New();
+	gs->SetInputData(gray_data);
+	gs->SetDimensionality(3);
+	gs->SetRadiusFactors(1, 1, 1);
+
+	//gradient with centre difference in three dimentions
+	vtkSmartPointer <vtkImageGradient> imgGradient = vtkSmartPointer<vtkImageGradient>::New();
+	imgGradient->SetInputConnection(gs->GetOutputPort());
+	imgGradient->SetDimensionality(3);
+	//imgGradient->Update();
+
+	//gradient magnitude
+	vtkSmartPointer<vtkImageMagnitude> imgMagnitude  = vtkSmartPointer<vtkImageMagnitude>::New();
+	imgMagnitude->SetInputConnection(imgGradient->GetOutputPort());
+	imgMagnitude->Update();
+	double mag_range[2];
+	imgMagnitude->GetOutput()->GetScalarRange(mag_range);
+
+	//normalize magnitude
+	/*vtkSmartPointer<vtkImageShiftScale> normal_mag_data = vtkSmartPointer<vtkImageShiftScale>::New();
+	normal_mag_data->SetInputData(imgMagnitude->GetOutput());
+	normal_mag_data->SetShift(-mag_range[0]);
+	normal_mag_data->SetScale(255.0 / (mag_range[1] - mag_range[0]));
+	normal_mag_data->Update();*/
+
+	cout << "magnitude calculation finish." << endl;
+
+	//******************get roi points gray and mag *********************
+	vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+	vtkSmartPointer<vtkMinimalStandardRandomSequence> sequence = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
+	for (int i = 0; i < 100; i++)
+	{
+		//map poly coords to data coords
+		int n = sequence->GetValue() * roi_counts;
+		sequence->Next();
+
+		double poly_coords[3];
+		int data_coords[3];
+		gray_thresh->GetOutput()->GetPoint(n, poly_coords);
+		data_coords[0] = (poly_coords[0] - poly_bounds[0]) / spacing_x;
+		data_coords[1] = (poly_coords[1] - poly_bounds[2]) / spacing_y;
+		data_coords[2] = (poly_coords[2] - poly_bounds[4]) / spacing_z;
+
+		double * ele_gray = (double *)gray_data->GetScalarPointer(data_coords);
+		double * ele_mag = (double *)imgMagnitude->GetOutput()->GetScalarPointer(data_coords);
+
+		//cout << (*ele_gray / 255.0) * (gray_range[1] - gray_range[0]) + gray_range[0] << " " << 
+			//(*ele_mag / 255.0) * (mag_range[1] - mag_range[0]) + mag_range[0] << endl;
+		cout << *ele_gray << " " << *ele_mag << endl;
+
+		points->InsertNextPoint(*ele_gray, *ele_mag, 0.0);
+	}
+	cout << "Got all roi points' gray and mag" << endl;
+	
+
+	//************************ K Means ********************************
+	// Get the points into the format needed for KMeans
+	vtkSmartPointer<vtkTable> inputData = vtkSmartPointer<vtkTable>::New();
+
+	for (int c = 0; c < 3; ++c)
+	{
+		std::stringstream colName;
+		colName << "coord " << c;
+		vtkSmartPointer<vtkDoubleArray> doubleArray = vtkSmartPointer<vtkDoubleArray>::New();
+		doubleArray->SetNumberOfComponents(1);
+		doubleArray->SetName(colName.str().c_str());
+		doubleArray->SetNumberOfTuples(points->GetNumberOfPoints());
+
+
+		for (int r = 0; r < points->GetNumberOfPoints(); ++r)
+		{
+			double p[3];
+			points->GetPoint(r, p);
+
+			doubleArray->SetValue(r, p[c]);
+		}
+
+		inputData->AddColumn(doubleArray);
+	}
+	cout << "transfered k-means inout data format." << endl;
+
+	vtkSmartPointer<vtkKMeansDistanceFunctorCalculator> function = vtkSmartPointer<vtkKMeansDistanceFunctorCalculator>::New();
+	function->SetDistanceExpression("abs(x0-y0) + abs(x1-y1)");
+
+	vtkSmartPointer<vtkKMeansStatistics> kMeansStatistics = vtkSmartPointer<vtkKMeansStatistics>::New();
+	kMeansStatistics->SetDistanceFunctor(function);
+
+	kMeansStatistics->SetInputData(vtkStatisticsAlgorithm::INPUT_DATA, inputData);
+	kMeansStatistics->SetColumnStatus(inputData->GetColumnName(0), 1);
+	kMeansStatistics->SetColumnStatus(inputData->GetColumnName(1), 1);
+	kMeansStatistics->SetColumnStatus(inputData->GetColumnName(2), 1);
+	//kMeansStatistics->SetColumnStatus( "Testing", 1 );
+	kMeansStatistics->RequestSelectedColumns();
+	kMeansStatistics->SetAssessOption(true);
+	kMeansStatistics->SetDefaultNumberOfClusters(3);
+	kMeansStatistics->Update();
+
+	cout << "K-Means finish." << endl;
+
+	//get cluster centers
+	vtkMultiBlockDataSet* outputMetaDS = vtkMultiBlockDataSet::SafeDownCast(kMeansStatistics->GetOutputDataObject(vtkStatisticsAlgorithm::OUTPUT_MODEL));
+	vtkSmartPointer<vtkTable> outputMeta = vtkTable::SafeDownCast(outputMetaDS->GetBlock(0));
+	//vtkSmartPointer<vtkTable> outputMeta = vtkTable::SafeDownCast( outputMetaDS->GetBlock( 1 ) );
+	vtkDoubleArray* coord0 = vtkDoubleArray::SafeDownCast(outputMeta->GetColumnByName("coord 0"));
+	vtkDoubleArray* coord1 = vtkDoubleArray::SafeDownCast(outputMeta->GetColumnByName("coord 1"));
+	vtkDoubleArray* coord2 = vtkDoubleArray::SafeDownCast(outputMeta->GetColumnByName("coord 2"));
+
+	for (unsigned int i = 0; i < coord0->GetNumberOfTuples(); ++i)
+	{
+		double center_gv = coord0->GetValue(i) / 255.0 * (gray_range[1] - gray_range[0]) + gray_range[0];
+		double center_gd = coord1->GetValue(i) / 255.0 * (mag_range[1] - mag_range[0]) + mag_range[0];
+		cout << center_gv << " " << center_gd << " " << coord2->GetValue(i) << std::endl;
+	}
+
+	// Display the results
+	//kMeansStatistics->GetOutput()->Dump();
+	vtkSmartPointer<vtkIntArray> clusterArray = vtkSmartPointer<vtkIntArray>::New();
+	clusterArray->SetNumberOfComponents(1);
+	clusterArray->SetName("ClusterId");
+
+	cout << "kMeansStatistics rows: " << kMeansStatistics->GetOutput()->GetNumberOfRows() << endl;
+	cout << "kMeansStatistics cols: " << kMeansStatistics->GetOutput()->GetNumberOfColumns() << endl;
+	for (int r = 0; r < kMeansStatistics->GetOutput()->GetNumberOfRows(); r++)
+	{
+		vtkVariant v = kMeansStatistics->GetOutput()->GetValue(r, kMeansStatistics->GetOutput()->GetNumberOfColumns() - 1);
+		//std::cout << "Point " << r << " is in cluster " << v.ToInt() << std::endl;
+		clusterArray->InsertNextValue(v.ToInt());
+	}
+
+	// Create a lookup table to map point data to colors
+	vtkSmartPointer<vtkLookupTable> lut =
+		vtkSmartPointer<vtkLookupTable>::New();
+	int tableSize = kMeansStatistics->GetDefaultNumberOfClusters();
+	lut->SetNumberOfTableValues(tableSize);
+	lut->Build();
+
+	// Fill in the lookup table
+	for (unsigned int i = 0; i < tableSize; ++i)
+	{
+		lut->SetTableValue(i,
+			vtkMath::Random(.25, 1.0),
+			vtkMath::Random(.25, 1.0),
+			vtkMath::Random(.25, 1.0),
+			1.0);
+	}
+
+	vtkSmartPointer<vtkPolyData> polydata = vtkSmartPointer<vtkPolyData>::New();
+	polydata->SetPoints(points);
+	polydata->GetPointData()->SetScalars(clusterArray);
+
+	// Display
+	vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+	glyphFilter->SetInputData(polydata);
+	glyphFilter->Update();
+
+	// Create a mapper and actor
+	vtkSmartPointer<vtkPolyDataMapper> mapper =
+		vtkSmartPointer<vtkPolyDataMapper>::New();
+	mapper->SetInputConnection(glyphFilter->GetOutputPort());
+	mapper->SetScalarRange(0, tableSize - 1);
+	mapper->SetLookupTable(lut);
+
+	vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+	actor->SetMapper(mapper);
+	actor->GetProperty()->SetPointSize(3);
+
+	// Create a renderer, render window, and interactor
+	vtkSmartPointer<vtkRenderer> renderer =
+		vtkSmartPointer<vtkRenderer>::New();
+	vtkSmartPointer<vtkRenderWindow> renderWindow =
+		vtkSmartPointer<vtkRenderWindow>::New();
+	renderWindow->AddRenderer(renderer);
+	vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
+		vtkSmartPointer<vtkRenderWindowInteractor>::New();
+	renderWindowInteractor->SetRenderWindow(renderWindow);
+
+	// Add the actor to the scene
+	renderer->AddActor(actor);
+	renderer->SetBackground(1.0, 1.0, 1.0);
+
+	vtkSmartPointer<vtkInteractorStyleTrackballCamera> style =
+		vtkSmartPointer<vtkInteractorStyleTrackballCamera>::New();
+	renderWindowInteractor->SetInteractorStyle(style);
+
+	// Render and interact
+	renderWindow->Render();
+	renderWindowInteractor->Start();
 }
 
 void RoiVisualizer::transferData()
