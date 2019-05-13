@@ -52,7 +52,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(ui->kmeans_button, SIGNAL(released()), this, SLOT(onKMeansSlot()));
 
 	//bound magnitude slider
-	connect(ui->magnitude_thresh_slider, SIGNAL(valueChanged(int)), this, SLOT(onMagThreshChangeSlot(int)));
+	connect(ui->magnitude_thresh_slider, SIGNAL(lowerValueChanged(int)), this, SLOT(onMagThreshMinChangeSlot(int)));
+	connect(ui->magnitude_thresh_slider, SIGNAL(upperValueChanged(int)), this, SLOT(onMagThreshMaxChangeSlot(int)));
 
 	//roi button
 	connect(ui->roi_render_button, SIGNAL(released()), this, SLOT(onRoiRenderSlot()));
@@ -420,13 +421,18 @@ void MainWindow::onRoiToBoundSlot()
 	boundVisualizer->visualizeData();
 }
 
-void MainWindow::onMagThreshChangeSlot(int pos)
+void MainWindow::onMagThreshMinChangeSlot(int aMin)
 {
-	//ui->magnitude_cur_label->setText(QString::number(pos));
-	boundVisualizer->setMagnitudeThresh(pos);
-	boundVisualizer->updateVisualData();
+	ui->magnitude_min_label->setText(QString::number(aMin));
+	if(boundVisualizer->setMagnitudeRange(aMin, boundVisualizer->getMagnitudeRangeMax()))
+		boundVisualizer->updateVisualData();
+}
 
-	ui->roiBound_thresh_label->setText(QString::number(pos));
+void MainWindow::onMagThreshMaxChangeSlot(int aMax)
+{
+	ui->magnitude_max_label->setText(QString::number(aMax));
+	if (boundVisualizer->setMagnitudeRange(boundVisualizer->getMagnitudeRangeMin(), aMax))
+		boundVisualizer->updateVisualData();
 }
 
 void MainWindow::onRoiRenderSlot()
@@ -561,6 +567,7 @@ void MainWindow::onOpenDicomFolderSlot()
 	roiVisualizer->visualizeData();
 
 	boundVisualizer->setOriginData(roiVisualizer->getTransferedData());
+	boundVisualizer->transferData();
 	boundVisualizer->visualizeData();
 
 	//set initial gradient-opactiy render style  and draw initial tf

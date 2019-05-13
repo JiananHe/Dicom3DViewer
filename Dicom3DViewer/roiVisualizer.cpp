@@ -74,6 +74,35 @@ float RoiVisualizer::getRoiRangeMax()
 	return roi_max;
 }
 
+void RoiVisualizer::transferData()
+{
+	double range[2];
+	getOriginData()->GetScalarRange(range);
+	cout << "src gray range: " << range[0] << " " << range[1] << endl;
+
+	//thresh the gray data to get roi according to the roi range
+	roi_thresh->SetInputData(getOriginData());
+	roi_thresh->ThresholdBetween(roi_min, roi_max);
+	roi_thresh->ReplaceInOff();
+	roi_thresh->ReplaceOutOn();
+	roi_thresh->SetReplaceOut(roi_min);
+	roi_thresh->Update();
+
+	vtkSmartPointer<vtkImageCast> ic = vtkSmartPointer< vtkImageCast>::New();
+	ic->SetInputConnection(roi_thresh->GetOutputPort());
+	ic->SetOutputScalarTypeToFloat();
+	ic->Update();
+	setTransferedData(ic->GetOutput());
+
+	//shift and scale to 0 - 255 to visualize
+	roi_ss->SetInputConnection(ic->GetOutputPort());
+	roi_ss->SetShift(-roi_min);
+	roi_ss->SetScale(255.0 / (roi_max - roi_min));
+	roi_ss->Update();
+	setVisualData(roi_ss->GetOutput());
+}
+
+
 void RoiVisualizer::kMeansCalc()
 {
 
@@ -309,32 +338,4 @@ void RoiVisualizer::kMeansCalc()
 	// Render and interact
 	renderWindow->Render();
 	renderWindowInteractor->Start();
-}
-
-void RoiVisualizer::transferData()
-{
-	double range[2];
-	getOriginData()->GetScalarRange(range);
-	cout << "src gray range: " << range[0] << " " << range[1] << endl;
-
-	//thresh the gray data to get roi according to the roi range
-	roi_thresh->SetInputData(getOriginData());
-	roi_thresh->ThresholdBetween(roi_min, roi_max);
-	roi_thresh->ReplaceInOff();
-	roi_thresh->ReplaceOutOn();
-	roi_thresh->SetReplaceOut(roi_min);
-	roi_thresh->Update();
-
-	vtkSmartPointer<vtkImageCast> ic = vtkSmartPointer< vtkImageCast>::New();
-	ic->SetInputConnection(roi_thresh->GetOutputPort());
-	ic->SetOutputScalarTypeToFloat();
-	ic->Update();
-	setTransferedData(ic->GetOutput());
-
-	//shift and scale to 0 - 255 to visualize
-	roi_ss->SetInputConnection(ic->GetOutputPort());
-	roi_ss->SetShift(-roi_min);
-	roi_ss->SetScale(255.0 / (roi_max - roi_min));
-	roi_ss->Update();
-	setVisualData(roi_ss->GetOutput());
 }

@@ -75,7 +75,8 @@ private slots:
 	void onKMeansSlot();
 
 	void onRoiToBoundSlot();
-	void onMagThreshChangeSlot(int);
+	void onMagThreshMinChangeSlot(int);
+	void onMagThreshMaxChangeSlot(int);
 
 	void onRoiRenderSlot();
 	void onRoiIncreaseRenderSlot();
