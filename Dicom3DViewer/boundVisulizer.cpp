@@ -40,7 +40,7 @@ int BoundVisualizer::getMagnitudeRangeMax()
 	return mag_max_threshold;
 }
 
-QString BoundVisualizer::getPositionMag(int x, int y)
+double BoundVisualizer::getPositionMag(int x, int y)
 {
 	vtkSmartPointer<vtkImageData> gradient = imgMagnitude->GetOutput();
 	vtkSmartPointer<vtkPointData> pointData_gd = vtkSmartPointer<vtkPointData>::New();
@@ -59,7 +59,7 @@ QString BoundVisualizer::getPositionMag(int x, int y)
 	vtkPointData* pd_gd = gradient->GetPointData();
 	if (!pd_gd)
 	{
-		return "None";
+		return -10000.0;
 	}
 
 	pointData_gd->InterpolateAllocate(pd_gd, 1, 1);
@@ -82,10 +82,10 @@ QString BoundVisualizer::getPositionMag(int x, int y)
 		// Interpolate the point data
 		pointData_gd->InterpolatePoint(pd_gd, 0, cell_gd->PointIds, weights_gd);
 		double* tuple = pointData_gd->GetScalars()->GetTuple(0);
-		return QString::number(tuple[0], 10, 2);
+		return tuple[0];
 	}
 	else
-		return "None";
+		return -10000.0;
 }
 
 float BoundVisualizer::getMaxBoundGradientValue()

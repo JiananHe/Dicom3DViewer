@@ -36,6 +36,7 @@ public:
 	float getRoiRangeMin();
 	float getRoiRangeMax();
 
+	void setKMeansInitPoint(double, double);
 	void kMeansCalc();
 private:
 	float roi_min;
@@ -46,4 +47,7 @@ private:
 	RangeSlider * roi_range_slider;
 	QLabel * roi_min_label;
 	QLabel * roi_max_label;
+
+	double k_gray;
+	double k_mag;
 };

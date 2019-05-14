@@ -103,6 +103,12 @@ void RoiVisualizer::transferData()
 }
 
 
+void RoiVisualizer::setKMeansInitPoint(double gray, double mag)
+{
+	k_gray = gray;
+	k_mag = mag;
+}
+
 void RoiVisualizer::kMeansCalc()
 {
 
@@ -113,33 +119,6 @@ void RoiVisualizer::kMeansCalc()
 
 	int dims[3];
 	gray_data->GetDimensions(dims);
-
-	/*vtkSmartPointer<vtkImageShiftScale> normal_gray_data = vtkSmartPointer<vtkImageShiftScale>::New();
-	normal_gray_data->SetInputData(gray_data);
-	normal_gray_data->SetShift(-gray_range[0]);
-	normal_gray_data->SetScale(255.0 / (gray_range[1] - gray_range[0]));
-	normal_gray_data->Update();*/
-
-	//******************************* get roi poly data **************************
-	/*vtkSmartPointer<vtkThresholdPoints> gray_thresh = vtkSmartPointer<vtkThresholdPoints>::New();
-	gray_thresh->ThresholdBetween(roi_min, roi_max);
-	gray_thresh->SetInputData(gray_data);
-	gray_thresh->Update();
-	int roi_counts = gray_thresh->GetOutput()->GetNumberOfPoints();
-	cout << "KMeans gray points: " << roi_counts << endl;
-
-	double thresh_range[2];
-	gray_thresh->GetOutput()->GetScalarRange(thresh_range);
-	cout << "thresh range: " << thresh_range[0] << " " << thresh_range[1] << endl;
-
-	int dims[3];
-	gray_data->GetDimensions(dims);
-
-	double poly_bounds[6];
-	gray_thresh->GetOutput()->GetBounds(poly_bounds);
-	double spacing_x = (poly_bounds[1] - poly_bounds[0]) / (dims[0] - 1);
-	double spacing_y = (poly_bounds[3] - poly_bounds[2]) / (dims[1] - 1);
-	double spacing_z = (poly_bounds[5] - poly_bounds[4]) / (dims[2] - 1);*/
 
 	//******************calculate the magnitude ***************************
 	vtkSmartPointer<vtkImageGaussianSmooth> gs = vtkSmartPointer<vtkImageGaussianSmooth>::New();
@@ -172,9 +151,11 @@ void RoiVisualizer::kMeansCalc()
 	//******************get roi points gray and mag *********************
 	vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 	vtkSmartPointer<vtkMinimalStandardRandomSequence> sequence = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
+
+	//insert initial K-Means centro
+	points->InsertNextPoint(k_gray, k_mag, 0.0);
 	for (int i = 0; i < 5000; i++)
 	{
-		//map poly coords to data coords
 		int x = sequence->GetValue() * dims[0];
 		sequence->Next();
 		int y = sequence->GetValue() * dims[1];
@@ -219,7 +200,6 @@ void RoiVisualizer::kMeansCalc()
 		doubleArray->SetName(colName.str().c_str());
 		doubleArray->SetNumberOfTuples(points->GetNumberOfPoints());
 
-
 		for (int r = 0; r < points->GetNumberOfPoints(); ++r)
 		{
 			double p[3];
@@ -230,7 +210,7 @@ void RoiVisualizer::kMeansCalc()
 
 		inputData->AddColumn(doubleArray);
 	}
-	cout << "transfered k-means inout data format." << endl;
+	cout << "transfered k-means input data format." << endl;
 
 	vtkSmartPointer<vtkKMeansDistanceFunctorCalculator> function = vtkSmartPointer<vtkKMeansDistanceFunctorCalculator>::New();
 	function->SetDistanceExpression("abs(x0-y0) + abs(x1-y1)");

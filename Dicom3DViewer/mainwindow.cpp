@@ -354,8 +354,14 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 		if (event->type() == QEvent::MouseButtonRelease)
 		{
 			QPoint mp = ui->dicom_widget->mapFromGlobal(QCursor::pos());
-			dicomVisualizer->showPositionGray(mp.x(), ui->dicom_widget->geometry().height() - mp.y() - 1);
-			dicomVisualizer->showPositionMag(boundVisualizer->getPositionMag(mp.x(), ui->dicom_widget->geometry().height() - mp.y() - 1));
+			double gray = dicomVisualizer->showPositionGray(mp.x(), ui->dicom_widget->geometry().height() - mp.y() - 1);
+			double mag = boundVisualizer->getPositionMag(mp.x(), ui->dicom_widget->geometry().height() - mp.y() - 1);
+			roiVisualizer->setKMeansInitPoint(gray, mag);
+			cout << "clicked point, gray: " << gray << "mag: " << mag << endl;
+			if (mag == -10000.0)
+				dicomVisualizer->showPositionMag("None");
+			else
+				dicomVisualizer->showPositionMag(QString::number(mag, 10, 2));
 			//boundVisualizer->setRoiGrayValue(dicomSeriesReader->getRoiGray());
 		}
 	}

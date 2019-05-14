@@ -20,7 +20,7 @@ public:
 	bool setMagnitudeRange(int , int);
 	int getMagnitudeRangeMin();
 	int getMagnitudeRangeMax();
-	QString getPositionMag(int x, int y);
+	double getPositionMag(int x, int y);
 	void updateVisualData();
 
 	float getMaxBoundGradientValue();

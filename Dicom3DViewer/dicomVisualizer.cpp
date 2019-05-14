@@ -23,7 +23,7 @@ void DicomVisualizer::transferData()
 	setVisualData(ic->GetOutput());
 }
 
-void DicomVisualizer::showPositionGray(int x, int y)
+double DicomVisualizer::showPositionGray(int x, int y)
 {
 	//show coords
 	dicom_coords_label->setText("X=" + QString::number(x) + " Y=" + QString::number(y) + " Z=" + QString::number(viewer->GetSlice()));
@@ -45,7 +45,7 @@ void DicomVisualizer::showPositionGray(int x, int y)
 	vtkPointData* pd_gv = image->GetPointData();
 	if (!pd_gv)
 	{
-		return;
+		return -10000.0;
 	}
 
 	pointData_gv->InterpolateAllocate(pd_gv, 1, 1);
@@ -64,9 +64,13 @@ void DicomVisualizer::showPositionGray(int x, int y)
 		pointData_gv->InterpolatePoint(pd_gv, 0, cell_gv->PointIds, weights_gv);
 		double* tuple = pointData_gv->GetScalars()->GetTuple(0);
 		dicom_gray_label->setText(QString::number(tuple[0], 10, 2));
+		return tuple[0];
 	}
 	else
+	{
 		dicom_gray_label->setText("None");
+		return -10000.0;
+	}
 }
 
 void DicomVisualizer::showPositionMag(QString text)
