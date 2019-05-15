@@ -225,7 +225,7 @@ void RoiVisualizer::kMeansCalc()
 	//kMeansStatistics->SetColumnStatus( "Testing", 1 );
 	kMeansStatistics->RequestSelectedColumns();
 	kMeansStatistics->SetAssessOption(true);
-	kMeansStatistics->SetDefaultNumberOfClusters(3);
+	kMeansStatistics->SetDefaultNumberOfClusters(4);
 	kMeansStatistics->Update();
 
 	cout << "K-Means finish." << endl;
@@ -268,7 +268,8 @@ void RoiVisualizer::kMeansCalc()
 	lut->Build();
 
 	// Fill in the lookup table
-	for (unsigned int i = 0; i < tableSize; ++i)
+	lut->SetTableValue(0, 0.0, 0.0, 0.0, 1.0);
+	for (unsigned int i = 1; i < tableSize; ++i)
 	{
 		lut->SetTableValue(i,
 			vtkMath::Random(.25, 1.0),
