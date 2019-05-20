@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "transferFunction.h"
 
+vtkStandardNewMacro(myVtkInteractorStyleImage);
 int color_left_border = 10000, color_right_border = 0, opacity_left_border = 10000, opacity_right_border = 0, gradient_left_border = 10000, gradient_right_border = 0;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -362,7 +363,6 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 				dicomVisualizer->showPositionMag("None");
 			else
 				dicomVisualizer->showPositionMag(QString::number(mag, 10, 2));
-			//boundVisualizer->setRoiGrayValue(dicomSeriesReader->getRoiGray());
 		}
 	}
 
@@ -389,17 +389,10 @@ void MainWindow::onShowGradientBpInfoAt(int idx)
 
 void MainWindow::onGradientThreshSlideMoveSlot(int pos)
 {
-	//dicomSeriesReader->gradientThreshSlideMove(pos);
 }
 
 void MainWindow::onBoundExtractionButton()
 {
-	/*boundVisualizer->findROIBound(
-		dicomSeriesReader->getImageGradientData(), 
-		dicomSeriesReader->getImageMagnitudeData(), 
-		dicomSeriesReader->getImageGrayData(), 
-		dicomSeriesReader->getBoundMagnitudePoly());*/
-	//dicomSeriesReader->findROIBound();
 }
 
 void MainWindow::onRoiGrayMinChangeSlot(int aMin)
@@ -520,7 +513,6 @@ void MainWindow::onResetGradientTfSlot()
 
 void MainWindow::onDicomSeriesSlideMoveSlot(int pos)
 {
-	//dicomSeriesReader->dicomSeriseSlideMove(pos);
 	dicomVisualizer->sliceMove(pos);
 	roiVisualizer->sliceMove(pos);
 	boundVisualizer->sliceMove(pos);
@@ -565,7 +557,6 @@ void MainWindow::onOpenDicomFolderSlot()
 	vrProcess->update();
 
 	//********************************************show dicoms series********************************************
-	//dicomSeriesReader->drawDicomSeries(folder_path);
 	dicomVisualizer->setOriginData(vrProcess->getDicomReader()->GetOutput());
 	dicomVisualizer->visualizeData();
 
@@ -626,7 +617,6 @@ void MainWindow::onOpenDiiFileSlot()
 	vrProcess->update();
 
 	//********************************************show dicoms series********************************************
-	//dicomSeriesReader->drawDicomSeries(folder_path);
 	dicomVisualizer->setOriginData(vrProcess->getNiiReaderOutput());
 	dicomVisualizer->visualizeData();
 

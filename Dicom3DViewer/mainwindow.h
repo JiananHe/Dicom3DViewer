@@ -10,7 +10,6 @@
 #include "volumeRenderProcess.h"
 #include "colorTransferFunction.h"
 #include "opacityTransferFunction.h"
-//#include "dicomSeriesReader.h"
 #include "dicomVisualizer.h"
 #include "roiVisualizer.h"
 #include "boundVisulizer.h"
@@ -41,8 +40,6 @@ private:
 	BoundVisualizer * boundVisualizer;
 
 	int niiOrDicom; // 0 for nii, 1 for dicom
-	//DicomSeriesReader * dicomSeriesReader;
-	//BoundVisualizer * boundVisualizer;
 	
 
 private slots:
