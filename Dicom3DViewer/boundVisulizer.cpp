@@ -8,24 +8,39 @@ BoundVisualizer::BoundVisualizer(QFrame * vtk_frame, QString name, QFrame * slid
 	nonMaxFloat = vtkSmartPointer<vtkImageData>::New();
 	mag_thresh_poly = vtkSmartPointer<vtkThresholdPoints>::New();
 
-	magnitude_thresh_slider = vtk_frame->findChild<QSlider*>("magnitude_thresh_slider");
+	magnitude_thresh_slider = vtk_frame->findChild<RangeSlider*>("magnitude_thresh_slider");
 	magnitude_max_label = vtk_frame->findChild<QLabel*>("magnitude_max_label");
 	magnitude_min_label = vtk_frame->findChild<QLabel*>("magnitude_min_label");
-	magnitude_cur_label = vtk_frame->findChild<QLabel*>("magnitude_cur_label");
-
-	mag_threshold = 0;
 }
 
 BoundVisualizer::~BoundVisualizer()
 {
 }
 
-void BoundVisualizer::setMagnitudeThresh(float threshold)
+bool BoundVisualizer::setMagnitudeRange(int rMin, int rMax)
 {
-	mag_threshold = threshold;
+	if (mag_min_threshold == rMin && mag_max_threshold == rMax)
+		return false;
+	else
+	{
+		mag_min_threshold = rMin;
+		mag_max_threshold = rMax;
+		magnitude_min_label->setText(QString::number(mag_min_threshold, 10, 0));
+		magnitude_max_label->setText(QString::number(mag_max_threshold, 10, 0));
+		return true;
+	}
+}
+int BoundVisualizer::getMagnitudeRangeMin()
+{
+	return mag_min_threshold;
 }
 
-QString BoundVisualizer::getPositionMag(int x, int y)
+int BoundVisualizer::getMagnitudeRangeMax()
+{
+	return mag_max_threshold;
+}
+
+double BoundVisualizer::getPositionMag(int x, int y)
 {
 	vtkSmartPointer<vtkImageData> gradient = imgMagnitude->GetOutput();
 	vtkSmartPointer<vtkPointData> pointData_gd = vtkSmartPointer<vtkPointData>::New();
@@ -44,7 +59,7 @@ QString BoundVisualizer::getPositionMag(int x, int y)
 	vtkPointData* pd_gd = gradient->GetPointData();
 	if (!pd_gd)
 	{
-		return "None";
+		return -10000.0;
 	}
 
 	pointData_gd->InterpolateAllocate(pd_gd, 1, 1);
@@ -67,10 +82,10 @@ QString BoundVisualizer::getPositionMag(int x, int y)
 		// Interpolate the point data
 		pointData_gd->InterpolatePoint(pd_gd, 0, cell_gd->PointIds, weights_gd);
 		double* tuple = pointData_gd->GetScalars()->GetTuple(0);
-		return QString::number(tuple[0], 10, 2);
+		return tuple[0];
 	}
 	else
-		return "None";
+		return -10000.0;
 }
 
 float BoundVisualizer::getMaxBoundGradientValue()
@@ -80,17 +95,19 @@ float BoundVisualizer::getMaxBoundGradientValue()
 
 float BoundVisualizer::getMinBoundGradientValue()
 {
-	return mag_threshold;
+	return mag_range[0];
 }
 
-void BoundVisualizer::transferData()
+void BoundVisualizer::setOriginData(vtkSmartPointer<vtkImageData> input_data)
 {
+	SeriesVisualizer::setOriginData(input_data);
+
 	//thresh the magnitude
 	// Smooth the image
 	vtkSmartPointer<vtkImageGaussianSmooth> gs = vtkSmartPointer<vtkImageGaussianSmooth>::New();
 	gs->SetInputData(getOriginData());
 	gs->SetDimensionality(3);
-	gs->SetRadiusFactors(1, 1, 0);
+	gs->SetRadiusFactors(1, 1, 1);
 
 	//gradient with centre difference in three dimentions
 	vtkSmartPointer <vtkImageGradient> imgGradient = vtkSmartPointer<vtkImageGradient>::New();
@@ -111,43 +128,46 @@ void BoundVisualizer::transferData()
 
 	vtkSmartPointer<vtkImageCast> ic = vtkSmartPointer< vtkImageCast>::New();
 	ic->SetInputData(nonMax->GetOutput());
-	ic->SetOutputScalarTypeToFloat();
+	ic->SetOutputScalarTypeToDouble();
 	ic->Update();
 	nonMaxFloat = ic->GetOutput();
-
-	//get range
-	nonMaxFloat->GetScalarRange(mag_range);
-	cout << "mag range: " << mag_range[0] << " " << mag_range[1] << endl;
 
 	//thresh the magnitude
 	mag_thresh_img->SetInputData(nonMaxFloat);
 
-	mag_thresh_img->ThresholdByUpper(mag_threshold);
+	//get range
+	nonMaxFloat->GetScalarRange(mag_range);
+	cout << "mag range: " << mag_range[0] << " " << mag_range[1] << endl;
+	mag_min_threshold = int(mag_range[0]);
+	mag_max_threshold = int(mag_range[1]);
+
+	//set slider value
+	magnitude_max_label->setText(QString::number(mag_max_threshold, 10, 0));
+	magnitude_min_label->setText(QString::number(mag_min_threshold, 10, 0));
+
+	magnitude_thresh_slider->setMinimum(int(mag_range[0]));
+	magnitude_thresh_slider->setMaximum(int(mag_range[1]));
+}
+
+void BoundVisualizer::transferData()
+{
+	mag_thresh_img->ThresholdBetween(mag_min_threshold, mag_max_threshold);
 	mag_thresh_img->ReplaceInOff();
 	mag_thresh_img->ReplaceOutOn();
 	mag_thresh_img->SetOutValue(0);
 	mag_thresh_img->Update();
 
 	setVisualData(mag_thresh_img->GetOutput());
-
-	//set slider value
-	magnitude_cur_label->setText(QString::number(mag_threshold));
-	magnitude_max_label->setText(QString::number(mag_range[1], 10, 0));
-	magnitude_min_label->setText(QString::number(mag_range[0], 10, 0));
-	magnitude_thresh_slider->setMaximum(mag_range[1]);
-	magnitude_thresh_slider->setMinimum(mag_range[0]);
-	magnitude_thresh_slider->setValue(mag_threshold);
 }
 
 void BoundVisualizer::updateVisualData()
 {
-	mag_thresh_img->ThresholdByUpper(mag_threshold);
+	mag_thresh_img->ThresholdBetween(mag_min_threshold, mag_max_threshold);
 	mag_thresh_img->Update();
 
 	int slice = viewer->GetSlice();
 	viewer->SetSlice(slice);
 	viewer->Render();
-	magnitude_cur_label->setText(QString::number(mag_threshold));
 }
 
 map<double, double> BoundVisualizer::getRoiBoundMagBp()
@@ -155,7 +175,7 @@ map<double, double> BoundVisualizer::getRoiBoundMagBp()
 	roi_bound_gd.clear();
 	double res[3] = { 0.0 };
 
-	mag_thresh_poly->SetUpperThreshold(mag_threshold);
+	mag_thresh_img->ThresholdBetween(mag_min_threshold, mag_max_threshold);
 	mag_thresh_poly->SetInputData(nonMaxFloat);
 	mag_thresh_poly->Update();
 
@@ -240,4 +260,29 @@ map<double, double> BoundVisualizer::getRoiBoundMagBp()
 	roi_bound_gd.insert(pair<double, double>(mag + 1, 0.0));
 
 	return roi_bound_gd;
+}
+
+void BoundVisualizer::kMeansCalc()
+{
+	vtkSmartPointer<vtkImageData> gray_data = vtkSmartPointer<vtkImageData>::New();
+	gray_data = getOriginData();
+	double roi_gv_range[2];
+	gray_data->GetScalarRange(roi_gv_range);
+
+	vtkSmartPointer<vtkThresholdPoints> gray_thresh = vtkSmartPointer<vtkThresholdPoints>::New();
+	gray_thresh->SetInputData(gray_data);
+	gray_thresh->ThresholdBetween(roi_gv_range[0], roi_gv_range[1]);
+	gray_thresh->Update();
+	cout << "KMeans gray points: " << gray_thresh->GetOutput()->GetNumberOfPoints() << endl;
+	
+	vtkSmartPointer<vtkImageData> grad_data = vtkSmartPointer<vtkImageData>::New();
+	grad_data = imgMagnitude->GetOutput();
+	double roi_gd_range[2];
+	grad_data->GetScalarRange(roi_gd_range);
+
+	vtkSmartPointer<vtkThresholdPoints> grad_thresh = vtkSmartPointer<vtkThresholdPoints>::New();
+	grad_thresh->SetInputData(grad_data);
+	grad_thresh->ThresholdBetween(roi_gd_range[0], roi_gd_range[1]);
+	grad_thresh->Update();
+	cout << "KMeans grad points: " << grad_thresh->GetOutput()->GetNumberOfPoints() << endl;
 }

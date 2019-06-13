@@ -34,9 +34,33 @@ if("${VTK_QT_VERSION}" STREQUAL "")
   message(FATAL_ERROR "VTK was not built with Qt")
 endif()
 
-set( Srcs main.cpp mainwindow.cpp volumeRenderProcess.cpp colorTransferFunction.cpp opacityTransferFunction.cpp dicomSeriesReader.cpp RangeSlider.cpp boundVisulizer.cpp)
+set( Srcs 
+    main.cpp 
+    mainwindow.cpp 
+    volumeRenderProcess.cpp 
+    colorTransferFunction.cpp 
+    opacityTransferFunction.cpp 
+    RangeSlider.cpp 
+    boundVisulizer.cpp
+    dicomVisualizer.cpp
+    roiVisualizer.cpp
+)
 
-set( Hdrs mainwindow.h volumeRenderProcess.h colorTransferFunction.h opacityTransferFunction.h transferFunction.h breakPoints.h myQColor.h dicomSeriesReader.h mySeriesInteractorStyle.h RangeSlider.h boundVisulizer.h)
+set( Hdrs 
+    mainwindow.h 
+    volumeRenderProcess.h 
+    colorTransferFunction.h 
+    opacityTransferFunction.h 
+    transferFunction.h 
+    breakPoints.h 
+    myQColor.h 
+    mySeriesInteractorStyle.h 
+    RangeSlider.h 
+    seriesVisualizer.h
+    boundVisulizer.h 
+    dicomVisualizer.h 
+    roiVisualizer.h 
+)
 
 set( MOC_Hdrs mainwindow.h )
 

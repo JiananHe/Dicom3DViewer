@@ -8,7 +8,7 @@ public:
 	~DicomVisualizer();
 
 	void transferData();
-	void showPositionGray(int x, int y);
+	double showPositionGray(int x, int y);
 	void showPositionMag(QString);
 
 	vtkSmartPointer<vtkImageData> getOriginGrayData();

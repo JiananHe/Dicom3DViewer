@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "transferFunction.h"
 
+vtkStandardNewMacro(myVtkInteractorStyleImage);
 int color_left_border = 10000, color_right_border = 0, opacity_left_border = 10000, opacity_right_border = 0, gradient_left_border = 10000, gradient_right_border = 0;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -49,9 +50,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(ui->roi_range_slider, SIGNAL(upperValueChanged(int)), this, SLOT(onRoiGrayMaxChangeSlot(int)));
 	
 	connect(ui->bound_extraction_button, SIGNAL(released()), this, SLOT(onRoiToBoundSlot()));
+	connect(ui->kmeans_button, SIGNAL(released()), this, SLOT(onKMeansSlot()));
 
 	//bound magnitude slider
-	connect(ui->magnitude_thresh_slider, SIGNAL(valueChanged(int)), this, SLOT(onMagThreshChangeSlot(int)));
+	connect(ui->magnitude_thresh_slider, SIGNAL(lowerValueChanged(int)), this, SLOT(onMagThreshMinChangeSlot(int)));
+	connect(ui->magnitude_thresh_slider, SIGNAL(upperValueChanged(int)), this, SLOT(onMagThreshMaxChangeSlot(int)));
 
 	//roi button
 	connect(ui->roi_render_button, SIGNAL(released()), this, SLOT(onRoiRenderSlot()));
@@ -353,9 +356,14 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 		if (event->type() == QEvent::MouseButtonRelease)
 		{
 			QPoint mp = ui->dicom_widget->mapFromGlobal(QCursor::pos());
-			dicomVisualizer->showPositionGray(mp.x(), ui->dicom_widget->geometry().height() - mp.y() - 1);
-			dicomVisualizer->showPositionMag(boundVisualizer->getPositionMag(mp.x(), ui->dicom_widget->geometry().height() - mp.y() - 1));
-			//boundVisualizer->setRoiGrayValue(dicomSeriesReader->getRoiGray());
+			double gray = dicomVisualizer->showPositionGray(mp.x(), ui->dicom_widget->geometry().height() - mp.y() - 1);
+			double mag = boundVisualizer->getPositionMag(mp.x(), ui->dicom_widget->geometry().height() - mp.y() - 1);
+			roiVisualizer->setKMeansInitPoint(gray, mag);
+			cout << "clicked point, gray: " << gray << "mag: " << mag << endl;
+			if (mag == -10000.0)
+				dicomVisualizer->showPositionMag("None");
+			else
+				dicomVisualizer->showPositionMag(QString::number(mag, 10, 2));
 		}
 	}
 
@@ -382,17 +390,10 @@ void MainWindow::onShowGradientBpInfoAt(int idx)
 
 void MainWindow::onGradientThreshSlideMoveSlot(int pos)
 {
-	//dicomSeriesReader->gradientThreshSlideMove(pos);
 }
 
 void MainWindow::onBoundExtractionButton()
 {
-	/*boundVisualizer->findROIBound(
-		dicomSeriesReader->getImageGradientData(), 
-		dicomSeriesReader->getImageMagnitudeData(), 
-		dicomSeriesReader->getImageGrayData(), 
-		dicomSeriesReader->getBoundMagnitudePoly());*/
-	//dicomSeriesReader->findROIBound();
 }
 
 void MainWindow::onRoiGrayMinChangeSlot(int aMin)
@@ -409,19 +410,29 @@ void MainWindow::onRoiGrayMaxChangeSlot(int aMax)
 		roiVisualizer->updateVisualData();
 }
 
+void MainWindow::onKMeansSlot()
+{
+	roiVisualizer->kMeansCalc();
+}
+
 void MainWindow::onRoiToBoundSlot()
 {
-	boundVisualizer->setOriginData(roiVisualizer->getVisualData());
+	boundVisualizer->setOriginData(roiVisualizer->getTransferedData());
 	boundVisualizer->visualizeData();
 }
 
-void MainWindow::onMagThreshChangeSlot(int pos)
+void MainWindow::onMagThreshMinChangeSlot(int aMin)
 {
-	//ui->magnitude_cur_label->setText(QString::number(pos));
-	boundVisualizer->setMagnitudeThresh(pos);
-	boundVisualizer->updateVisualData();
+	ui->magnitude_min_label->setText(QString::number(aMin));
+	if(boundVisualizer->setMagnitudeRange(aMin, boundVisualizer->getMagnitudeRangeMax()))
+		boundVisualizer->updateVisualData();
+}
 
-	ui->roiBound_thresh_label->setText(QString::number(pos));
+void MainWindow::onMagThreshMaxChangeSlot(int aMax)
+{
+	ui->magnitude_max_label->setText(QString::number(aMax));
+	if (boundVisualizer->setMagnitudeRange(boundVisualizer->getMagnitudeRangeMin(), aMax))
+		boundVisualizer->updateVisualData();
 }
 
 void MainWindow::onRoiRenderSlot()
@@ -503,7 +514,6 @@ void MainWindow::onResetGradientTfSlot()
 
 void MainWindow::onDicomSeriesSlideMoveSlot(int pos)
 {
-	//dicomSeriesReader->dicomSeriseSlideMove(pos);
 	dicomVisualizer->sliceMove(pos);
 	roiVisualizer->sliceMove(pos);
 	boundVisualizer->sliceMove(pos);
@@ -548,14 +558,14 @@ void MainWindow::onOpenDicomFolderSlot()
 	vrProcess->update();
 
 	//********************************************show dicoms series********************************************
-	//dicomSeriesReader->drawDicomSeries(folder_path);
 	dicomVisualizer->setOriginData(vrProcess->getDicomReader()->GetOutput());
 	dicomVisualizer->visualizeData();
 
-	roiVisualizer->setOriginData(dicomVisualizer->getVisualData());
+	roiVisualizer->setOriginData(dicomVisualizer->getTransferedData());
 	roiVisualizer->visualizeData();
 
-	boundVisualizer->setOriginData(roiVisualizer->getVisualData());
+	boundVisualizer->setOriginData(roiVisualizer->getTransferedData());
+	boundVisualizer->transferData();
 	boundVisualizer->visualizeData();
 
 	//set initial gradient-opactiy render style  and draw initial tf
@@ -608,14 +618,13 @@ void MainWindow::onOpenDiiFileSlot()
 	vrProcess->update();
 
 	//********************************************show dicoms series********************************************
-	//dicomSeriesReader->drawDicomSeries(folder_path);
 	dicomVisualizer->setOriginData(vrProcess->getNiiReaderOutput());
 	dicomVisualizer->visualizeData();
 
-	roiVisualizer->setOriginData(dicomVisualizer->getVisualData());
+	roiVisualizer->setOriginData(dicomVisualizer->getTransferedData());
 	roiVisualizer->visualizeData();
 
-	boundVisualizer->setOriginData(roiVisualizer->getVisualData());
+	boundVisualizer->setOriginData(roiVisualizer->getTransferedData());
 	boundVisualizer->visualizeData();
 
 	//set initial gradient-opactiy render style  and draw initial tf
